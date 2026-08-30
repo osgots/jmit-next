@@ -8,9 +8,42 @@ const defaultUrl = process.env.VERCEL_URL
   : "http://localhost:3000";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: {
+    default: "JMIT Next | Modern College Information Portal",
+    template: "%s | JMIT Next",
+  },
+
+  description:
+    "A modern, responsive and searchable information management portal inspired by Seth Jai Parkash Mukand Lal Institute of Engineering & Technology.",
+
+  keywords: [
+    "JMIT",
+    "JMIT Radaur",
+    "JMIT Next",
+    "college portal",
+    "engineering college",
+    "BTech",
+    "CSE",
+    "JMIT notices",
+  ],
+
+  authors: [
+    {
+      name: "JMIT Next Project",
+    },
+  ],
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  openGraph: {
+    title: "JMIT Next",
+    description:
+      "Modern College Information & Management Portal",
+    type: "website",
+  },
 };
 
 const geistSans = Geist({
