@@ -21,10 +21,10 @@ export default async function SocialAdminPage() {
     createAdminClient();
 
   const [
-    usersResult,
-    pendingResult,
-    blueResult,
-    controlsResult,
+    users,
+    pending,
+    verified,
+    restricted,
   ] =
     await Promise.all([
       admin
@@ -75,116 +75,171 @@ export default async function SocialAdminPage() {
         ),
     ]);
 
+  const stats = [
+    {
+      label:
+        "Social Users",
+      value:
+        users.count ?? 0,
+    },
+    {
+      label:
+        "Pending Reviews",
+      value:
+        pending.count ?? 0,
+    },
+    {
+      label:
+        "Blue Verified",
+      value:
+        verified.count ?? 0,
+    },
+    {
+      label:
+        "Restricted",
+      value:
+        restricted.count ??
+        0,
+    },
+  ];
+
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-10">
-      <div className="mx-auto max-w-6xl">
-        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-violet-700">
-          <ShieldCheck
-            size={16}
-          />
-          Social Connect Administration
+    <main className="min-h-screen bg-[#f5f7fb] px-5 py-10">
+      <div className="mx-auto max-w-7xl">
+        <div className="overflow-hidden rounded-[34px] bg-gradient-to-br from-[#071a3d] via-[#17205f] to-violet-800 p-8 text-white shadow-xl md:p-10">
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-violet-200">
+            <ShieldCheck
+              size={16}
+            />
+
+            JMIT Next Admin
+          </div>
+
+          <h1 className="mt-4 text-4xl font-black tracking-[-0.05em] sm:text-5xl">
+            Social Control
+            Center
+          </h1>
+
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-violet-100">
+            Manage Social
+            Connect users,
+            verification,
+            suspicious accounts
+            and community safety
+            from one place.
+          </p>
+
+          <div className="mt-8 inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-xs font-black backdrop-blur">
+            <BadgeCheck
+              size={16}
+            />
+
+            Primary administrator
+            protected
+          </div>
         </div>
 
-        <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] text-[#071a3d]">
-          Social Control Center
-        </h1>
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            [
-              "Users",
-              usersResult.count ??
-                0,
-            ],
-            [
-              "Pending",
-              pendingResult.count ??
-                0,
-            ],
-            [
-              "Blue Verified",
-              blueResult.count ??
-                0,
-            ],
-            [
-              "Restricted",
-              controlsResult.count ??
-                0,
-            ],
-          ].map(
-            ([
-              label,
-              value,
-            ]) => (
+        <div className="-mt-5 grid gap-4 px-3 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map(
+            (stat) => (
               <div
                 key={
-                  label
+                  stat.label
                 }
-                className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm"
+                className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-lg"
               >
                 <p className="text-3xl font-black text-[#071a3d]">
-                  {value}
+                  {
+                    stat.value
+                  }
                 </p>
 
-                <p className="mt-2 text-xs font-black uppercase tracking-wider text-slate-400">
-                  {label}
+                <p className="mt-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  {
+                    stat.label
+                  }
                 </p>
               </div>
             ),
           )}
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <div className="mt-9 grid gap-5 md:grid-cols-2">
           <Link
             href="/admin/social/users"
-            className="group rounded-[28px] border border-slate-200 bg-white p-7 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
+            className="group rounded-[30px] border border-slate-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
           >
-            <Users
-              size={26}
-              className="text-blue-700"
-            />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+              <Users
+                size={22}
+              />
+            </div>
 
-            <h2 className="mt-5 text-xl font-black">
+            <h2 className="mt-6 text-2xl font-black text-[#071a3d]">
               Manage All Users
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              Search users, suspend
-              suspicious accounts,
-              restore accounts, revoke
-              verification or permanently
-              delete unauthorized users.
+            <p className="mt-3 text-sm leading-7 text-slate-500">
+              Search every user,
+              identify suspicious
+              accounts, suspend,
+              restore, revoke blue
+              verification or
+              permanently delete an
+              unauthorized account.
             </p>
+
+            <div className="mt-6 text-sm font-black text-blue-700">
+              Open User Manager →
+            </div>
           </Link>
 
           <Link
             href="/admin/social/verifications"
-            className="group rounded-[28px] border border-slate-200 bg-white p-7 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
+            className="group rounded-[30px] border border-slate-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
           >
-            <BadgeCheck
-              size={26}
-              className="text-blue-700"
-            />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+              <BadgeCheck
+                size={22}
+              />
+            </div>
 
-            <h2 className="mt-5 text-xl font-black">
-              Blue Tick Applications
+            <h2 className="mt-6 text-2xl font-black text-[#071a3d]">
+              Blue Tick
+              Applications
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              Privately review student
-              identity selfies and approve,
-              reject or request new
-              verification evidence.
+            <p className="mt-3 text-sm leading-7 text-slate-500">
+              Review the private
+              selfie + identity-card
+              evidence submitted by
+              students, confirm their
+              roll number and approve,
+              reject or request
+              another photo.
             </p>
+
+            <div className="mt-6 text-sm font-black text-blue-700">
+              Review Applications →
+            </div>
           </Link>
         </div>
 
-        <Link
-          href="/admin"
-          className="mt-8 inline-flex font-black text-blue-700"
-        >
-          ← Main Admin Dashboard
-        </Link>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <Link
+            href="/admin"
+            className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700"
+          >
+            ← Main Admin
+          </Link>
+
+          <Link
+            href="/social-connect"
+            className="rounded-xl bg-[#071f50] px-5 py-3 text-sm font-black text-white"
+          >
+            View Social Connect
+          </Link>
+        </div>
       </div>
     </main>
   );

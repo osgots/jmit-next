@@ -2,14 +2,15 @@
   Heart,
   MessageCircle,
   Plus,
+  ShieldCheck,
   UserPlus,
   Users,
 } from "lucide-react";
 
 import Link from "next/link";
 
-import BlueTick from "@/components/social/blue-tick";
 import SiteHeader from "@/components/site-header";
+import SocialBadge from "@/components/social/social-badge";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -28,23 +29,24 @@ export default async function SocialConnectPage() {
 
   let myProfile:
     | {
+        user_id: string;
         username: string;
-        avatar_url:
-          | string
-          | null;
+        avatar_url: string | null;
+        account_type: string;
       }
     | null = null;
 
+  let myBlue =
+    false;
+
   if (user) {
     const {
-      data,
+      data: profile,
     } =
       await supabase
-        .from(
-          "social_profiles",
-        )
+        .from("social_profiles")
         .select(
-          "username, avatar_url",
+          "user_id, username, avatar_url, account_type",
         )
         .eq(
           "user_id",
@@ -52,7 +54,31 @@ export default async function SocialConnectPage() {
         )
         .maybeSingle();
 
-    myProfile = data;
+    myProfile =
+      profile;
+
+    if (profile) {
+      const {
+        data: verification,
+      } =
+        await supabase
+          .from(
+            "social_blue_verifications",
+          )
+          .select(
+            "user_id",
+          )
+          .eq(
+            "user_id",
+            user.id,
+          )
+          .maybeSingle();
+
+      myBlue =
+        Boolean(
+          verification,
+        );
+    }
   }
 
   const {
@@ -71,12 +97,17 @@ export default async function SocialConnectPage() {
           ascending: false,
         },
       )
-      .limit(40);
+      .limit(50);
 
   const posts =
     postsData ?? [];
 
-  const userIds =
+  const postIds =
+    posts.map(
+      (post) => post.id,
+    );
+
+  const authorIds =
     Array.from(
       new Set(
         posts.map(
@@ -86,87 +117,143 @@ export default async function SocialConnectPage() {
       ),
     );
 
-  const postIds =
-    posts.map(
-      (post) =>
-        post.id,
+  const {
+    data: profilesData,
+  } =
+    authorIds.length
+      ? await supabase
+          .from(
+            "social_profiles",
+          )
+          .select(
+            "user_id, username, display_name, avatar_url, account_type",
+          )
+          .in(
+            "user_id",
+            authorIds,
+          )
+      : {
+          data: [],
+        };
+
+  const {
+    data: blueData,
+  } =
+    authorIds.length
+      ? await supabase
+          .from(
+            "social_blue_verifications",
+          )
+          .select(
+            "user_id, verified_roll_number",
+          )
+          .in(
+            "user_id",
+            authorIds,
+          )
+      : {
+          data: [],
+        };
+
+  const {
+    data: likesData,
+  } =
+    postIds.length
+      ? await supabase
+          .from(
+            "social_likes",
+          )
+          .select(
+            "post_id, user_id",
+          )
+          .in(
+            "post_id",
+            postIds,
+          )
+      : {
+          data: [],
+        };
+
+  const {
+    data: commentsData,
+  } =
+    postIds.length
+      ? await supabase
+          .from(
+            "social_comments",
+          )
+          .select(
+            "id, post_id, user_id, body, created_at",
+          )
+          .eq(
+            "status",
+            "active",
+          )
+          .in(
+            "post_id",
+            postIds,
+          )
+          .order(
+            "created_at",
+            {
+              ascending: true,
+            },
+          )
+      : {
+          data: [],
+        };
+
+  const commentUserIds =
+    Array.from(
+      new Set(
+        (
+          commentsData ??
+          []
+        ).map(
+          (comment) =>
+            comment.user_id,
+        ),
+      ),
     );
 
-  const profiles =
-    userIds.length
-      ? (
-          await supabase
-            .from(
-              "social_profiles",
-            )
-            .select("*")
-            .in(
-              "user_id",
-              userIds,
-            )
-        ).data ?? []
-      : [];
+  const missingIds =
+    commentUserIds.filter(
+      (id) =>
+        !authorIds.includes(
+          id,
+        ),
+    );
 
-  const verifications =
-    userIds.length
-      ? (
-          await supabase
-            .from(
-              "social_verifications",
-            )
-            .select(
-              "user_id, badge_type",
-            )
-            .in(
-              "user_id",
-              userIds,
-            )
-        ).data ?? []
-      : [];
+  let extraProfiles:
+    any[] = [];
 
-  const likes =
-    postIds.length
-      ? (
-          await supabase
-            .from(
-              "social_likes",
-            )
-            .select(
-              "post_id, user_id",
-            )
-            .in(
-              "post_id",
-              postIds,
-            )
-        ).data ?? []
-      : [];
+  if (
+    missingIds.length
+  ) {
+    const {
+      data,
+    } =
+      await supabase
+        .from(
+          "social_profiles",
+        )
+        .select(
+          "user_id, username, display_name, avatar_url, account_type",
+        )
+        .in(
+          "user_id",
+          missingIds,
+        );
 
-  const comments =
-    postIds.length
-      ? (
-          await supabase
-            .from(
-              "social_comments",
-            )
-            .select(
-              "id, post_id, user_id, body, created_at",
-            )
-            .eq(
-              "status",
-              "active",
-            )
-            .in(
-              "post_id",
-              postIds,
-            )
-            .order(
-              "created_at",
-              {
-                ascending: true,
-              },
-            )
-        ).data ?? []
-      : [];
+    extraProfiles =
+      data ?? [];
+  }
+
+  const profiles = [
+    ...(profilesData ??
+      []),
+    ...extraProfiles,
+  ];
 
   const profileMap =
     new Map(
@@ -178,34 +265,95 @@ export default async function SocialConnectPage() {
       ),
     );
 
-  const verificationMap =
+  const blueMap =
     new Map(
-      verifications.map(
-        (verification) => [
-          verification.user_id,
-          verification.badge_type,
+      (
+        blueData ??
+        []
+      ).map(
+        (blue) => [
+          blue.user_id,
+          blue,
         ],
       ),
     );
 
+  const likes =
+    likesData ?? [];
+
+  const comments =
+    commentsData ?? [];
+
+  function getBadge(
+    profile:
+      | any
+      | undefined,
+  ) {
+    if (!profile) {
+      return null;
+    }
+
+    if (
+      profile.account_type ===
+      "admin"
+    ) {
+      return "admin" as const;
+    }
+
+    if (
+      blueMap.has(
+        profile.user_id,
+      )
+    ) {
+      return "blue" as const;
+    }
+
+    if (
+      profile.account_type ===
+      "student"
+    ) {
+      return "student" as const;
+    }
+
+    return null;
+  }
+
+  const canPost =
+    myProfile &&
+    (
+      myProfile.account_type ===
+        "student" ||
+      myProfile.account_type ===
+        "admin"
+    );
+
   return (
-    <main className="min-h-screen bg-[#f5f7fb]">
+    <main className="min-h-screen bg-[#f4f6fa]">
       <SiteHeader />
 
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-7 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-blue-600">
-              <Users size={15} />
+              <Users
+                size={15}
+              />
+
               Social Connect
             </div>
 
             <h1 className="mt-2 text-3xl font-black tracking-[-0.04em] text-[#071a3d]">
-              JMIT community feed
+              JMIT Community
             </h1>
+
+            <p className="mt-2 text-sm text-slate-500">
+              Share campus moments,
+              connect with people and
+              discover what's happening.
+            </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {!user ? (
               <>
                 <Link
@@ -238,35 +386,73 @@ export default async function SocialConnectPage() {
                   My Profile
                 </Link>
 
-                <Link
-                  href="/social-connect/new"
-                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-700 to-cyan-600 px-4 py-2.5 text-sm font-black text-white"
-                >
-                  <Plus size={16} />
-                  New Post
-                </Link>
+                {myProfile.account_type ===
+                  "student" &&
+                  !myBlue && (
+                  <Link
+                    href="/social-connect/verification"
+                    className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-black text-blue-700"
+                  >
+                    <ShieldCheck
+                      size={15}
+                    />
+
+                    Get Blue Tick
+                  </Link>
+                )}
+
+                {canPost && (
+                  <Link
+                    href="/social-connect/new"
+                    className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-700 to-cyan-600 px-4 py-2.5 text-sm font-black text-white shadow-sm"
+                  >
+                    <Plus
+                      size={16}
+                    />
+
+                    New Post
+                  </Link>
+                )}
               </>
             )}
           </div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        {posts.length === 0 ? (
-          <div className="rounded-[28px] border border-slate-200 bg-white p-14 text-center">
+      {user &&
+        myProfile?.account_type ===
+          "visitor" && (
+          <div className="mx-auto mt-5 max-w-2xl px-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+              Visitor account:
+              you can browse,
+              follow, like and
+              comment. Posting
+              photos/videos is
+              available to student
+              and administrator
+              accounts.
+            </div>
+          </div>
+        )}
+
+      <section className="mx-auto max-w-2xl px-4 py-8">
+        {posts.length ===
+        0 ? (
+          <div className="rounded-[30px] border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
             <UserPlus
-              size={34}
+              size={36}
               className="mx-auto text-slate-300"
             />
 
-            <h2 className="mt-4 text-xl font-black text-slate-700">
-              Social Connect is ready.
+            <h2 className="mt-5 text-xl font-black text-[#071a3d]">
+              Social Connect is
+              ready.
             </h2>
 
             <p className="mt-2 text-sm text-slate-500">
-              Be the first person to
-              create a profile and share
-              a campus post.
+              No posts have been
+              shared yet.
             </p>
           </div>
         ) : (
@@ -279,8 +465,8 @@ export default async function SocialConnectPage() {
                   );
 
                 const badge =
-                  verificationMap.get(
-                    post.user_id,
+                  getBadge(
+                    author,
                   );
 
                 const postLikes =
@@ -298,17 +484,21 @@ export default async function SocialConnectPage() {
                   );
 
                 const likedByMe =
-                  !!user &&
-                  postLikes.some(
-                    (like) =>
-                      like.user_id ===
-                      user.id,
+                  Boolean(
+                    user &&
+                      postLikes.some(
+                        (like) =>
+                          like.user_id ===
+                          user.id,
+                      ),
                   );
 
                 return (
                   <article
-                    key={post.id}
-                    className="overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-sm"
+                    key={
+                      post.id
+                    }
+                    className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
                   >
                     <div className="flex items-center gap-3 p-4">
                       <Link
@@ -325,10 +515,10 @@ export default async function SocialConnectPage() {
                               author.avatar_url
                             }
                             alt=""
-                            className="h-11 w-11 rounded-full object-cover"
+                            className="h-11 w-11 rounded-full object-cover ring-2 ring-slate-100"
                           />
                         ) : (
-                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-100 font-black text-blue-700">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-cyan-50 font-black text-blue-700">
                             {(author?.display_name ??
                               "?")
                               .slice(
@@ -340,26 +530,53 @@ export default async function SocialConnectPage() {
                         )}
 
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
                             <p className="truncate text-sm font-black text-slate-900">
                               {author?.display_name ??
                                 "Social User"}
                             </p>
 
                             {badge && (
-                              <BlueTick
-                                type={
+                              <SocialBadge
+                                kind={
                                   badge
                                 }
                               />
                             )}
                           </div>
 
-                          <p className="text-xs text-slate-400">
-                            @
-                            {author?.username ??
-                              "unknown"}
-                          </p>
+                          <div className="mt-0.5 flex items-center gap-2">
+                            <p className="text-xs text-slate-400">
+                              @
+                              {author?.username ??
+                                "unknown"}
+                            </p>
+
+                            {author?.account_type ===
+                              "admin" && (
+                              <span className="text-[9px] font-black uppercase tracking-wider text-violet-600">
+                                Admin
+                              </span>
+                            )}
+
+                            {author?.account_type ===
+                              "student" &&
+                              !blueMap.has(
+                                author.user_id,
+                              ) && (
+                              <span className="text-[9px] font-black uppercase tracking-wider text-amber-600">
+                                Student
+                              </span>
+                            )}
+
+                            {blueMap.has(
+                              author?.user_id,
+                            ) && (
+                              <span className="text-[9px] font-black uppercase tracking-wider text-blue-600">
+                                Verified
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </Link>
                     </div>
@@ -373,7 +590,7 @@ export default async function SocialConnectPage() {
                         controls
                         playsInline
                         preload="metadata"
-                        className="max-h-[720px] w-full bg-black object-contain"
+                        className="max-h-[760px] w-full bg-black object-contain"
                       />
                     ) : (
                       <img
@@ -382,12 +599,12 @@ export default async function SocialConnectPage() {
                         }
                         alt=""
                         loading="lazy"
-                        className="max-h-[720px] w-full bg-slate-100 object-contain"
+                        className="max-h-[760px] w-full bg-slate-100 object-contain"
                       />
                     )}
 
                     <div className="p-5">
-                      <div className="flex items-center gap-5">
+                      <div className="flex items-center gap-6">
                         {user &&
                         myProfile ? (
                           <form
@@ -404,14 +621,15 @@ export default async function SocialConnectPage() {
                             />
 
                             <button
-                              className={`flex items-center gap-2 font-black ${
+                              aria-label="Like"
+                              className={`flex items-center gap-2 text-sm font-black transition ${
                                 likedByMe
                                   ? "text-red-500"
-                                  : "text-slate-700"
+                                  : "text-slate-700 hover:text-red-500"
                               }`}
                             >
                               <Heart
-                                size={22}
+                                size={23}
                                 fill={
                                   likedByMe
                                     ? "currentColor"
@@ -425,9 +643,9 @@ export default async function SocialConnectPage() {
                             </button>
                           </form>
                         ) : (
-                          <div className="flex items-center gap-2 font-black text-slate-500">
+                          <div className="flex items-center gap-2 text-sm font-black text-slate-500">
                             <Heart
-                              size={22}
+                              size={23}
                             />
                             {
                               postLikes.length
@@ -435,10 +653,11 @@ export default async function SocialConnectPage() {
                           </div>
                         )}
 
-                        <div className="flex items-center gap-2 font-black text-slate-500">
+                        <div className="flex items-center gap-2 text-sm font-black text-slate-500">
                           <MessageCircle
-                            size={21}
+                            size={22}
                           />
+
                           {
                             postComments.length
                           }
@@ -447,7 +666,7 @@ export default async function SocialConnectPage() {
 
                       {post.caption && (
                         <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700">
-                          <strong>
+                          <strong className="text-slate-900">
                             @
                             {author?.username ??
                               "user"}{" "}
@@ -470,23 +689,41 @@ export default async function SocialConnectPage() {
                                 comment.user_id,
                               );
 
+                            const commentBadge =
+                              getBadge(
+                                commentAuthor,
+                              );
+
                             return (
-                              <p
+                              <div
                                 key={
                                   comment.id
                                 }
-                                className="mt-2 text-sm text-slate-600"
+                                className="mt-2 flex gap-1.5 text-sm text-slate-600"
                               >
-                                <strong>
+                                <span className="inline-flex items-center gap-1 font-black text-slate-800">
                                   @
                                   {commentAuthor?.username ??
-                                    "user"}{" "}
-                                </strong>
+                                    "user"}
 
-                                {
-                                  comment.body
-                                }
-                              </p>
+                                  {commentBadge && (
+                                    <SocialBadge
+                                      kind={
+                                        commentBadge
+                                      }
+                                      size={
+                                        15
+                                      }
+                                    />
+                                  )}
+                                </span>
+
+                                <span>
+                                  {
+                                    comment.body
+                                  }
+                                </span>
+                              </div>
                             );
                           },
                         )}
@@ -497,7 +734,7 @@ export default async function SocialConnectPage() {
                             action={
                               addComment
                             }
-                            className="mt-4 flex gap-2 border-t border-slate-100 pt-4"
+                            className="mt-5 flex gap-2 border-t border-slate-100 pt-4"
                           >
                             <input
                               type="hidden"
@@ -514,10 +751,10 @@ export default async function SocialConnectPage() {
                                 1000
                               }
                               placeholder="Add a comment..."
-                              className="min-w-0 flex-1 rounded-xl bg-slate-50 px-4 py-2.5 text-sm outline-none"
+                              className="min-w-0 flex-1 rounded-xl bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-100"
                             />
 
-                            <button className="font-black text-blue-700">
+                            <button className="px-2 text-sm font-black text-blue-700">
                               Post
                             </button>
                           </form>
@@ -529,7 +766,7 @@ export default async function SocialConnectPage() {
             )}
           </div>
         )}
-      </div>
+      </section>
     </main>
   );
 }
