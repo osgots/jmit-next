@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import CommandSearch from "@/components/command-search";
-import { megaMenus } from "@/lib/site-data";
+import { megaMenus } from "@/lib/jmit-navigation";
 
 const navigation = [
   {
@@ -305,3 +305,4 @@ export default function SiteHeader() {
     </>
   );
 }
+

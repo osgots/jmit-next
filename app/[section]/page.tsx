@@ -5,10 +5,10 @@
 } from "lucide-react";
 
 import Link from "next/link";
-
 import { notFound } from "next/navigation";
 
 import SiteHeader from "@/components/site-header";
+import { routeForLabel } from "@/lib/jmit-routes";
 import { sectionPages } from "@/lib/site-data";
 
 type SectionKey =
@@ -24,7 +24,9 @@ export default async function SectionPage({
   const { section } =
     await params;
 
-  if (!(section in sectionPages)) {
+  if (
+    !(section in sectionPages)
+  ) {
     notFound();
   }
 
@@ -84,9 +86,11 @@ export default async function SectionPage({
               (card) => (
                 <Link
                   key={card}
-                  href={`/directory?q=${encodeURIComponent(
-                    card,
-                  )}`}
+                  href={
+                    routeForLabel(
+                      card,
+                    )
+                  }
                   className="group rounded-[24px] border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-950/[0.05]"
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
@@ -100,10 +104,9 @@ export default async function SectionPage({
                   </h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Search all imported
-                    JMIT pages, files and
-                    resources related to
-                    this topic.
+                    Open the corresponding
+                    JMIT information and
+                    resources.
                   </p>
 
                   <div className="mt-6 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-blue-700">
@@ -118,27 +121,6 @@ export default async function SectionPage({
               ),
             )}
           </div>
-        </div>
-      </section>
-
-      <section className="px-5 pb-20 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[30px] border border-blue-100 bg-blue-50 p-7 md:p-10">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">
-            JMIT NEXT DATABASE
-          </p>
-
-          <h2 className="mt-3 text-2xl font-black text-[#081a3d]">
-            Live imported institutional
-            information.
-          </h2>
-
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-            Pages and resources are
-            loaded from the JMIT Next
-            PostgreSQL content database
-            and synchronized from the
-            public JMIT website.
-          </p>
         </div>
       </section>
     </main>
