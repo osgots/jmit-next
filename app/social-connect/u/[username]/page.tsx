@@ -485,27 +485,31 @@ export default async function SocialProfilePage({
                 </p>
               </div>
 
-              <div className="flex-1 border-x border-slate-100 text-center sm:flex-none sm:px-7">
+              <Link
+                href={`/social-connect/u/${profile.username}/followers`}
+                className="flex-1 border-x border-slate-100 text-center transition hover:bg-slate-50 sm:flex-none sm:px-7"
+              >
                 <p className="text-xl font-black text-[#071a3d]">
-                  {followers ??
-                    0}
+                  {followers ?? 0}
                 </p>
 
                 <p className="text-xs font-semibold text-slate-500">
                   Followers
                 </p>
-              </div>
+              </Link>
 
-              <div className="flex-1 text-center sm:flex-none sm:px-7">
+              <Link
+                href={`/social-connect/u/${profile.username}/following`}
+                className="flex-1 text-center transition hover:bg-slate-50 sm:flex-none sm:px-7"
+              >
                 <p className="text-xl font-black text-[#071a3d]">
-                  {following ??
-                    0}
+                  {following ?? 0}
                 </p>
 
                 <p className="text-xs font-semibold text-slate-500">
                   Following
                 </p>
-              </div>
+              </Link>
             </div>
 
 
