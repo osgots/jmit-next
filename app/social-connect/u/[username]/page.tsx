@@ -602,10 +602,11 @@ export default async function SocialProfilePage({
               {(posts ??
                 []).map(
                 (post) => (
-                  <div
+                  <Link
                     key={
                       post.id
                     }
+                    href={`/social-connect/post/${post.id}`}
                     className="group relative aspect-square overflow-hidden bg-slate-100 sm:rounded-xl"
                   >
                     {post.media_type ===
@@ -637,7 +638,7 @@ export default async function SocialProfilePage({
                     )}
 
                     <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
-                  </div>
+                  </Link>
                 ),
               )}
             </div>

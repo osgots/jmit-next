@@ -6,6 +6,7 @@ import {
   createClient,
 } from "@/lib/supabase/server";
 
+
 export async function requireSocialUser() {
   const supabase =
     await createClient();
@@ -15,11 +16,13 @@ export async function requireSocialUser() {
   } =
     await supabase.auth.getUser();
 
+
   if (!user) {
     redirect(
       "/auth/login",
     );
   }
+
 
   return {
     supabase,
@@ -27,12 +30,14 @@ export async function requireSocialUser() {
   };
 }
 
+
 export async function requireSocialProfile() {
   const {
     supabase,
     user,
   } =
     await requireSocialUser();
+
 
   const {
     data: profile,
@@ -48,11 +53,13 @@ export async function requireSocialProfile() {
       )
       .maybeSingle();
 
+
   if (!profile) {
     redirect(
       "/social-connect/onboarding",
     );
   }
+
 
   const {
     data: control,
@@ -61,12 +68,15 @@ export async function requireSocialProfile() {
       .from(
         "social_account_controls",
       )
-      .select("status")
+      .select(
+        "status",
+      )
       .eq(
         "user_id",
         user.id,
       )
       .maybeSingle();
+
 
   if (
     control &&
@@ -74,9 +84,10 @@ export async function requireSocialProfile() {
       "active"
   ) {
     redirect(
-      "/social-connect?error=account-suspended",
+      "/social-connect?error=account-restricted",
     );
   }
+
 
   return {
     supabase,
@@ -84,6 +95,7 @@ export async function requireSocialProfile() {
     profile,
   };
 }
+
 
 export async function requireSocialPoster() {
   const {
@@ -93,8 +105,10 @@ export async function requireSocialPoster() {
   } =
     await requireSocialProfile();
 
+
   const {
-    data: appProfile,
+    data:
+      appProfile,
   } =
     await supabase
       .from("profiles")
@@ -105,9 +119,11 @@ export async function requireSocialPoster() {
       )
       .maybeSingle();
 
+
   const isAdmin =
     appProfile?.role ===
     "admin";
+
 
   if (
     !isAdmin &&
@@ -118,6 +134,7 @@ export async function requireSocialPoster() {
       "/social-connect?error=posting-not-allowed",
     );
   }
+
 
   return {
     supabase,
