@@ -9,7 +9,7 @@ import SiteHeader from "@/components/site-header";
 import { createClient } from "@/lib/supabase/server";
 
 
-export default async function SocialOnboardingPage() {
+export default async function SocialSettingsPage() {
   const supabase =
     await createClient();
 
@@ -26,22 +26,15 @@ export default async function SocialOnboardingPage() {
   }
 
 
-  /*
-   * IMPORTANT:
-   * An existing Social Connect profile
-   * NEVER sees this creation form.
-   */
   const {
-    data: existing,
-    error:
-      existingError,
+    data: profile,
   } =
     await supabase
       .from(
         "social_profiles",
       )
       .select(
-        "username",
+        "username, display_name, bio, avatar_url, account_type",
       )
       .eq(
         "user_id",
@@ -50,21 +43,9 @@ export default async function SocialOnboardingPage() {
       .maybeSingle();
 
 
-  if (
-    existingError
-  ) {
-    console.error(
-      "Profile lookup failed:",
-      existingError.message,
-    );
-  }
-
-
-  if (
-    existing?.username
-  ) {
+  if (!profile) {
     redirect(
-      `/social-connect/u/${existing.username}`,
+      "/social-connect/onboarding",
     );
   }
 
@@ -88,29 +69,37 @@ export default async function SocialOnboardingPage() {
     "admin";
 
 
+  const accountType =
+    isAdmin
+      ? "admin"
+      : profile.account_type ===
+          "visitor"
+        ? "visitor"
+        : "student";
+
+
   return (
     <main className="min-h-screen bg-[#f5f7fb]">
       <SiteHeader />
 
       <div className="mx-auto max-w-2xl px-5 py-12">
-        <div className="mb-8 text-center">
+        <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-600">
             Social Connect
           </p>
 
           <h1 className="mt-3 text-4xl font-black tracking-[-0.045em] text-[#071a3d]">
-            Create your
-            profile.
+            Edit Profile
           </h1>
 
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-slate-600">
-            Set up how other
-            Social Connect users
-            will see you.
+          <p className="mt-3 text-sm text-slate-600">
+            Update your profile
+            photo, display name,
+            username and bio.
           </p>
         </div>
 
-        <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50 sm:p-8">
+        <div className="mt-8 rounded-[30px] border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50 sm:p-8">
           <ProfileEditor
             userId={
               user.id
@@ -118,15 +107,31 @@ export default async function SocialOnboardingPage() {
             isAdmin={
               isAdmin
             }
-            mode="create"
+            mode="edit"
+            initialProfile={{
+              username:
+                profile.username,
+
+              display_name:
+                profile.display_name,
+
+              bio:
+                profile.bio,
+
+              avatar_url:
+                profile.avatar_url,
+
+              account_type:
+                accountType,
+            }}
           />
         </div>
 
         <Link
-          href="/social-connect"
+          href={`/social-connect/u/${profile.username}`}
           className="mt-6 block text-center text-sm font-black text-blue-700"
         >
-          Back to Social Connect
+          ← Back to Profile
         </Link>
       </div>
     </main>
