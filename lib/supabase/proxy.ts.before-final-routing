@@ -4,12 +4,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
 
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({
+  let supabaseResponse = NextResponse.next({
     request,
   });
 
   if (!hasEnvVars) {
-    return response;
+    return supabaseResponse;
   }
 
   const supabase = createServerClient(
@@ -22,11 +22,12 @@ export async function updateSession(request: NextRequest) {
         },
 
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
+          cookiesToSet.forEach(
+            ({ name, value }) =>
+              request.cookies.set(name, value),
+          );
 
-          response = NextResponse.next({
+          supabaseResponse = NextResponse.next({
             request,
           });
 
@@ -35,13 +36,12 @@ export async function updateSession(request: NextRequest) {
               name,
               value,
               options,
-            }) => {
-              response.cookies.set(
+            }) =>
+              supabaseResponse.cookies.set(
                 name,
                 value,
                 options,
-              );
-            },
+              ),
           );
         },
       },
@@ -49,14 +49,15 @@ export async function updateSession(request: NextRequest) {
   );
 
   /*
-   * Refresh authentication cookies only.
+   * Refresh/verify the Supabase session.
    *
-   * PUBLIC WEBSITE ROUTES MUST REMAIN PUBLIC.
-   * /admin performs its own authorization checks.
-   * Social Connect performs its own authentication
-   * checks only when users create/interact with content.
+   * IMPORTANT:
+   * Public JMIT pages must NOT require login.
+   * Individual protected areas such as /admin
+   * and Campus Connect private actions perform
+   * their own authorization checks.
    */
   await supabase.auth.getClaims();
 
-  return response;
+  return supabaseResponse;
 }

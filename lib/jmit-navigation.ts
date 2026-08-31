@@ -1,77 +1,99 @@
-﻿export type MegaMenuGroup = {
-  title: string;
-
-  links: {
-    label: string;
-    href: string;
-    description?: string;
-  }[];
+﻿export type NavigationLink = {
+  label: string;
+  href: string;
+  description?: string;
 };
 
-export const megaMenus: Record<string, MegaMenuGroup[]> = {
+export type NavigationGroup = {
+  title: string;
+  links: NavigationLink[];
+};
+
+export const mainNavigation = [
+  {
+    label: "Home",
+    href: "/",
+  },
+  {
+    label: "Academics",
+    href: "/academics",
+  },
+  {
+    label: "Admissions",
+    href: "/admissions",
+  },
+  {
+    label: "Departments",
+    href: "/departments",
+  },
+  {
+    label: "Placements",
+    href: "/placements",
+  },
+  {
+    label: "Campus Life",
+    href: "/campus-life",
+  },
+];
+
+export const megaMenus: Record<string, NavigationGroup[]> = {
   Academics: [
     {
-      title: "Academic Resources",
+      title: "Academics",
       links: [
         {
           label: "Academic Calendar",
           href: "/explore/academic-calendar",
-          description: "Official academic schedules",
-        },
-        {
-          label: "Time Tables",
-          href: "/resources/timetable",
-          description: "Department-wise class schedules",
-        },
-        {
-          label: "Syllabus",
-          href: "/resources/syllabus",
-          description: "Department-wise curriculum",
         },
         {
           label: "Research & Development",
-          href: "/explore/research-and-development-rd",
-          description: "Research initiatives",
+          href: "/directory?q=Research%20and%20Development",
+        },
+        {
+          label: "Rules & Regulations",
+          href: "/directory?q=Rules%20Regulations",
         },
       ],
     },
-
     {
-      title: "Engineering",
+      title: "Student Resources",
       links: [
         {
-          label: "Computer Science & Engineering",
-          href: "/explore/overview",
+          label: "Time Tables",
+          href: "/directory?q=Time%20Table",
         },
         {
-          label: "Information Technology",
-          href: "/explore/overview90",
+          label: "Syllabus",
+          href: "/directory?q=Syllabus",
         },
         {
-          label: "Mechanical Engineering",
-          href: "/explore/overview98",
+          label: "Faculty",
+          href: "/directory?q=Faculty",
         },
         {
-          label: "Electrical & Computer Engineering",
-          href: "/explore/overview114",
+          label: "Lesson Plans",
+          href: "/directory?q=Lesson%20Plan",
         },
       ],
     },
-
     {
-      title: "Other Programs",
+      title: "Programs",
       links: [
         {
-          label: "MBA",
-          href: "/explore/overview122",
+          label: "B.Tech",
+          href: "/departments",
+        },
+        {
+          label: "BCA",
+          href: "/explore/overview174",
         },
         {
           label: "BBA",
           href: "/explore/overview153",
         },
         {
-          label: "BCA",
-          href: "/explore/overview174",
+          label: "MBA",
+          href: "/explore/overview122",
         },
       ],
     },
@@ -79,7 +101,7 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
 
   Admissions: [
     {
-      title: "Admissions",
+      title: "Apply",
       links: [
         {
           label: "Admission Procedure",
@@ -90,40 +112,38 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
           href: "/directory?q=Courses%20and%20Intake",
         },
         {
-          label: "Fee Structure",
-          href: "/explore/fee-structure",
+          label: "Admission Counselling",
+          href: "/directory?q=Admission%20Counselling",
         },
       ],
     },
-
     {
-      title: "Student Support",
+      title: "Financial",
       links: [
         {
-          label: "Admission Counselling",
-          href: "/explore/admission-counselling",
+          label: "Fee Structure",
+          href: "/directory?q=Fee%20Structure",
         },
         {
           label: "Scholarships",
-          href: "/explore/scholarships",
+          href: "/directory?q=Scholarships",
         },
+        {
+          label: "Study Loan",
+          href: "/directory?q=Study%20Loan",
+        },
+      ],
+    },
+    {
+      title: "Help",
+      links: [
         {
           label: "Admission Notices",
           href: "/notices?category=Admissions",
         },
-      ],
-    },
-
-    {
-      title: "Contact",
-      links: [
         {
-          label: "Contact Address",
-          href: "/explore/contact-address",
-        },
-        {
-          label: "All Admission Information",
-          href: "/admissions",
+          label: "Contact JMIT",
+          href: "/directory?q=Contact%20Address",
         },
       ],
     },
@@ -151,7 +171,6 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
         },
       ],
     },
-
     {
       title: "Management",
       links: [
@@ -165,7 +184,6 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
         },
       ],
     },
-
     {
       title: "Computer Applications",
       links: [
@@ -183,7 +201,7 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
 
   Placements: [
     {
-      title: "Training & Placement",
+      title: "Placement Cell",
       links: [
         {
           label: "Placement Cell & Record",
@@ -193,13 +211,8 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
           label: "Placement Rules",
           href: "/directory?q=Placement%20Rules",
         },
-        {
-          label: "Placement Highlights",
-          href: "/directory?q=Placement%20Highlights",
-        },
       ],
     },
-
     {
       title: "Industry",
       links: [
@@ -213,17 +226,16 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
         },
       ],
     },
-
     {
-      title: "Updates",
+      title: "Results",
       links: [
+        {
+          label: "Placement Highlights",
+          href: "/directory?q=Placement%20Highlights",
+        },
         {
           label: "Placement Notices",
           href: "/notices?category=Placement",
-        },
-        {
-          label: "All Placement Information",
-          href: "/placements",
         },
       ],
     },
@@ -231,7 +243,7 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
 
   "Campus Life": [
     {
-      title: "Infrastructure",
+      title: "Facilities",
       links: [
         {
           label: "Hostel Accommodation",
@@ -251,17 +263,16 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
         },
       ],
     },
-
     {
-      title: "Students",
+      title: "Student Life",
       links: [
         {
           label: "Clubs & Societies",
-          href: "/explore/clubssocieties",
+          href: "/directory?q=Clubs%20Societies",
         },
         {
           label: "Sports",
-          href: "/explore/sports",
+          href: "/directory?q=Sports",
         },
         {
           label: "NCC / NSS",
@@ -269,13 +280,16 @@ export const megaMenus: Record<string, MegaMenuGroup[]> = {
         },
       ],
     },
-
     {
-      title: "Explore",
+      title: "Innovation",
       links: [
         {
-          label: "Campus Life",
-          href: "/campus-life",
+          label: "Entrepreneurship",
+          href: "/directory?q=Entrepreneurship",
+        },
+        {
+          label: "Startups",
+          href: "/directory?q=Startups",
         },
         {
           label: "Career Counselling",
