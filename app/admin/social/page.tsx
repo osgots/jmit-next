@@ -1,7 +1,7 @@
 ﻿import {
   BadgeCheck,
   ShieldCheck,
-  UserRoundCheck,
+  Users,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -10,210 +10,181 @@ import {
   requireManager,
 } from "@/lib/auth/require-manager";
 
-import BlueTick from "@/components/social/blue-tick";
-
 import {
-  setVerification,
-} from "./actions";
+  createAdminClient,
+} from "@/lib/supabase/admin";
 
-export default async function AdminSocialPage() {
-  const {
-    supabase,
-  } =
-    await requireManager();
+export default async function SocialAdminPage() {
+  await requireManager();
 
-  const {
-    data: socialProfiles,
-  } =
-    await supabase
-      .from(
-        "social_profiles",
-      )
-      .select("*")
-      .order(
-        "created_at",
-        {
-          ascending: false,
-        },
-      );
+  const admin =
+    createAdminClient();
 
-  const userIds =
-    (socialProfiles ?? [])
-      .map(
-        (profile) =>
-          profile.user_id,
-      );
+  const [
+    usersResult,
+    pendingResult,
+    blueResult,
+    controlsResult,
+  ] =
+    await Promise.all([
+      admin
+        .from(
+          "social_profiles",
+        )
+        .select("*", {
+          count: "exact",
+          head: true,
+        }),
 
-  const verifications =
-    userIds.length
-      ? (
-          await supabase
-            .from(
-              "social_verifications",
-            )
-            .select("*")
-            .in(
-              "user_id",
-              userIds,
-            )
-        ).data ?? []
-      : [];
+      admin
+        .from(
+          "social_verification_applications",
+        )
+        .select("*", {
+          count: "exact",
+          head: true,
+        })
+        .eq(
+          "status",
+          "pending",
+        ),
 
-  const verificationMap =
-    new Map(
-      verifications.map(
-        (item) => [
-          item.user_id,
-          item,
-        ],
-      ),
-    );
+      admin
+        .from(
+          "social_blue_verifications",
+        )
+        .select("*", {
+          count: "exact",
+          head: true,
+        }),
+
+      admin
+        .from(
+          "social_account_controls",
+        )
+        .select("*", {
+          count: "exact",
+          head: true,
+        })
+        .in(
+          "status",
+          [
+            "suspended",
+            "banned",
+          ],
+        ),
+    ]);
 
   return (
-    <main className="min-h-screen bg-slate-50 p-5 md:p-10">
-      <div className="mx-auto max-w-5xl">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-blue-600">
-              <ShieldCheck
-                size={15}
-              />
+    <main className="min-h-screen bg-slate-50 px-5 py-10">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-violet-700">
+          <ShieldCheck
+            size={16}
+          />
+          Social Connect Administration
+        </div>
 
-              Admin
-            </div>
+        <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] text-[#071a3d]">
+          Social Control Center
+        </h1>
 
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-[#071a3d]">
-              Social Verification
-            </h1>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            [
+              "Users",
+              usersResult.count ??
+                0,
+            ],
+            [
+              "Pending",
+              pendingResult.count ??
+                0,
+            ],
+            [
+              "Blue Verified",
+              blueResult.count ??
+                0,
+            ],
+            [
+              "Restricted",
+              controlsResult.count ??
+                0,
+            ],
+          ].map(
+            ([
+              label,
+              value,
+            ]) => (
+              <div
+                key={
+                  label
+                }
+                className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm"
+              >
+                <p className="text-3xl font-black text-[#071a3d]">
+                  {value}
+                </p>
 
-            <p className="mt-3 text-sm text-slate-500">
-              Only admins/editors can
-              create or remove Social
-              Connect blue ticks.
+                <p className="mt-2 text-xs font-black uppercase tracking-wider text-slate-400">
+                  {label}
+                </p>
+              </div>
+            ),
+          )}
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          <Link
+            href="/admin/social/users"
+            className="group rounded-[28px] border border-slate-200 bg-white p-7 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
+          >
+            <Users
+              size={26}
+              className="text-blue-700"
+            />
+
+            <h2 className="mt-5 text-xl font-black">
+              Manage All Users
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Search users, suspend
+              suspicious accounts,
+              restore accounts, revoke
+              verification or permanently
+              delete unauthorized users.
             </p>
-          </div>
+          </Link>
 
           <Link
-            href="/admin"
-            className="font-black text-blue-700"
+            href="/admin/social/verifications"
+            className="group rounded-[28px] border border-slate-200 bg-white p-7 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
           >
-            ← Dashboard
+            <BadgeCheck
+              size={26}
+              className="text-blue-700"
+            />
+
+            <h2 className="mt-5 text-xl font-black">
+              Blue Tick Applications
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Privately review student
+              identity selfies and approve,
+              reject or request new
+              verification evidence.
+            </p>
           </Link>
         </div>
 
-        <div className="mt-8 space-y-3">
-          {(socialProfiles ?? []).map(
-            (profile) => {
-              const verification =
-                verificationMap.get(
-                  profile.user_id,
-                );
-
-              return (
-                <div
-                  key={
-                    profile.user_id
-                  }
-                  className="rounded-2xl border border-slate-200 bg-white p-5"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                    {profile.avatar_url ? (
-                      <img
-                        src={
-                          profile.avatar_url
-                        }
-                        alt=""
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50">
-                        <UserRoundCheck
-                          size={20}
-                          className="text-blue-700"
-                        />
-                      </div>
-                    )}
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <p className="font-black text-slate-800">
-                          {
-                            profile.display_name
-                          }
-                        </p>
-
-                        {verification && (
-                          <BlueTick
-                            type={
-                              verification.badge_type
-                            }
-                          />
-                        )}
-                      </div>
-
-                      <p className="text-xs text-slate-400">
-                        @
-                        {
-                          profile.username
-                        }
-                      </p>
-                    </div>
-
-                    <form
-                      action={
-                        setVerification
-                      }
-                      className="flex flex-wrap gap-2"
-                    >
-                      <input
-                        type="hidden"
-                        name="user_id"
-                        value={
-                          profile.user_id
-                        }
-                      />
-
-                      <button
-                        name="badge_type"
-                        value="verified"
-                        className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-black text-blue-700"
-                      >
-                        ✓ Verify
-                      </button>
-
-                      <button
-                        name="badge_type"
-                        value="official"
-                        className="rounded-lg bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700"
-                      >
-                        Official
-                      </button>
-
-                      <button
-                        name="badge_type"
-                        value="admin"
-                        className="flex items-center gap-1 rounded-lg bg-indigo-50 px-3 py-2 text-xs font-black text-indigo-700"
-                      >
-                        <BadgeCheck
-                          size={13}
-                        />
-                        Admin
-                      </button>
-
-                      <button
-                        name="badge_type"
-                        value="remove"
-                        className="rounded-lg bg-red-50 px-3 py-2 text-xs font-black text-red-600"
-                      >
-                        Remove
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              );
-            },
-          )}
-        </div>
+        <Link
+          href="/admin"
+          className="mt-8 inline-flex font-black text-blue-700"
+        >
+          ← Main Admin Dashboard
+        </Link>
       </div>
     </main>
   );
