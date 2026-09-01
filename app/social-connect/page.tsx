@@ -13,6 +13,8 @@ import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import PostControls from "@/components/social/post-controls";
+import SocialNav from "@/components/social/social-nav";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -137,6 +139,16 @@ export default async function SocialConnectPage() {
       : {
           data: [],
         };
+
+  const {
+    data: roleData,
+  } =
+    authorIds.length
+      ? await supabase
+          .from("profiles")
+          .select("id, role")
+          .in("id", authorIds)
+      : { data: [] };
 
   const {
     data: blueData,
@@ -267,6 +279,19 @@ export default async function SocialConnectPage() {
       ),
     );
 
+  const roleMap =
+    new Map(
+      (
+        roleData ??
+        []
+      ).map(
+        (row) => [
+          row.id,
+          row.role,
+        ],
+      ),
+    );
+
   const blueMap =
     new Map(
       (
@@ -296,8 +321,9 @@ export default async function SocialConnectPage() {
     }
 
     if (
-      profile.account_type ===
-      "admin"
+      roleMap.get(
+        profile.user_id,
+      ) === "admin"
     ) {
       return "admin" as const;
     }
@@ -319,6 +345,42 @@ export default async function SocialConnectPage() {
 
     return null;
   }
+
+  const {
+    data: savedRows,
+  } =
+    user && postIds.length
+      ? await supabase
+          .from("social_saved_posts")
+          .select("post_id")
+          .eq("user_id", user.id)
+          .in("post_id", postIds)
+      : { data: [] };
+
+  const savedSet =
+    new Set(
+      (
+        savedRows ??
+        []
+      ).map(
+        (row) =>
+          row.post_id,
+      ),
+    );
+
+  const {
+    count: unreadNotifications,
+  } =
+    user
+      ? await supabase
+          .from("social_notifications")
+          .select("*", {
+            count: "exact",
+            head: true,
+          })
+          .eq("user_id", user.id)
+          .eq("is_read", false)
+      : { count: 0 };
 
   const canPost =
     myProfile &&
@@ -576,8 +638,9 @@ export default async function SocialConnectPage() {
                                 "unknown"}
                             </p>
 
-                            {author?.account_type ===
-                              "admin" && (
+                            {roleMap.get(
+                              author?.user_id,
+                            ) === "admin" && (
                               <span className="text-[9px] font-black uppercase tracking-wider text-violet-600">
                                 Admin
                               </span>
@@ -791,6 +854,14 @@ export default async function SocialConnectPage() {
           </div>
         )}
       </section>
+
+      <SocialNav
+        username={myProfile?.username ?? null}
+        canPost={Boolean(canPost)}
+        unread={unreadNotifications ?? 0}
+      />
+
+      <div className="h-20 md:h-0" />
     </main>
   );
 }
