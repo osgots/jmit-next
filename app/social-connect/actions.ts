@@ -958,3 +958,58 @@ export async function socialLogout() {
     "/social-connect",
   );
 }
+
+export async function startConversation(
+  formData: FormData,
+) {
+  const {
+    supabase,
+  } =
+    await requireSocialProfile();
+
+
+  const targetUserId =
+    String(
+      formData.get(
+        "target_user_id",
+      ) ?? "",
+    );
+
+
+  if (!targetUserId) {
+    return;
+  }
+
+
+  const {
+    data:
+      conversationId,
+
+    error,
+  } =
+    await supabase.rpc(
+      "social_get_or_create_conversation",
+      {
+        p_other_user:
+          targetUserId,
+      },
+    );
+
+
+  if (
+    error ||
+    !conversationId
+  ) {
+    redirect(
+      `/social-connect/chats?error=${encodeURIComponent(
+        error?.message ??
+          "Unable to start conversation.",
+      )}`,
+    );
+  }
+
+
+  redirect(
+    `/social-connect/chats/${conversationId}`,
+  );
+}

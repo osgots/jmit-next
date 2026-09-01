@@ -20,26 +20,34 @@ export default function SocialNav({
   canPost?: boolean;
   unread?: number;
 }) {
+  const item =
+    "relative flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300";
+
+
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-[65] border-t border-slate-200 bg-white/95 px-2 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl md:hidden dark:border-slate-800 dark:bg-slate-950/95">
+      <nav className="fixed bottom-0 left-0 right-0 z-[65] border-t border-slate-200 bg-white/95 px-1 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl md:hidden dark:border-slate-800 dark:bg-slate-950/95">
+
         <div className="mx-auto flex max-w-lg items-center justify-around">
 
           <Link
             href="/social-connect"
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 dark:text-slate-200"
+            className={item}
+            title="Feed"
           >
             <Home
-              size={22}
+              size={21}
             />
           </Link>
 
+
           <Link
             href="/social-connect/search"
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 dark:text-slate-200"
+            className={item}
+            title="Search"
           >
             <Search
-              size={22}
+              size={21}
             />
           </Link>
 
@@ -48,34 +56,48 @@ export default function SocialNav({
             <Link
               href="/social-connect/new"
               className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white"
+              title="Create"
             >
               <PlusSquare
-                size={22}
+                size={21}
               />
             </Link>
           ) : (
             <Link
               href="/social-connect/saved"
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 dark:text-slate-200"
+              className={item}
+              title="Saved"
             >
               <Bookmark
-                size={22}
+                size={21}
               />
             </Link>
           )}
 
 
           <Link
+            href="/social-connect/chats"
+            className={item}
+            title="Chats"
+          >
+            <MessageCircle
+              size={21}
+            />
+          </Link>
+
+
+          <Link
             href="/social-connect/notifications"
-            className="relative flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 dark:text-slate-200"
+            className={item}
+            title="Notifications"
           >
             <Bell
-              size={22}
+              size={21}
             />
 
             {unread >
               0 && (
-              <span className="absolute right-1 top-1 min-w-4 rounded-full bg-red-500 px-1 text-center text-[9px] font-black leading-4 text-white">
+              <span className="absolute right-0.5 top-0.5 min-w-4 rounded-full bg-red-500 px-1 text-center text-[8px] font-black leading-4 text-white">
                 {unread >
                 99
                   ? "99+"
@@ -91,10 +113,11 @@ export default function SocialNav({
                 ? `/social-connect/u/${username}`
                 : "/social-connect/onboarding"
             }
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 dark:text-slate-200"
+            className={item}
+            title="Profile"
           >
             <UserRound
-              size={22}
+              size={21}
             />
           </Link>
         </div>
@@ -105,8 +128,8 @@ export default function SocialNav({
 
         <Link
           href="/social-connect"
+          className={item}
           title="Feed"
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           <Home
             size={18}
@@ -115,8 +138,8 @@ export default function SocialNav({
 
         <Link
           href="/social-connect/search"
+          className={item}
           title="Search"
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           <Search
             size={18}
@@ -126,8 +149,8 @@ export default function SocialNav({
         {canPost && (
           <Link
             href="/social-connect/new"
+            className={item}
             title="Create"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             <PlusSquare
               size={18}
@@ -136,9 +159,19 @@ export default function SocialNav({
         )}
 
         <Link
+          href="/social-connect/chats"
+          className={item}
+          title="Chats"
+        >
+          <MessageCircle
+            size={18}
+          />
+        </Link>
+
+        <Link
           href="/social-connect/notifications"
+          className={item}
           title="Notifications"
-          className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           <Bell
             size={18}
@@ -157,28 +190,19 @@ export default function SocialNav({
 
         <Link
           href="/social-connect/saved"
+          className={item}
           title="Saved"
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           <Bookmark
             size={18}
           />
         </Link>
 
-        <span
-          title="Chats coming in next patch"
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-300 dark:text-slate-700"
-        >
-          <MessageCircle
-            size={18}
-          />
-        </span>
-
         {username && (
           <Link
             href={`/social-connect/u/${username}`}
+            className={item}
             title="Profile"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             <UserRound
               size={18}

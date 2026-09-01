@@ -17,6 +17,7 @@ import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import MessageUserButton from "@/components/social/message-user-button";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -385,6 +386,13 @@ export default async function SocialProfilePage({
               {/* ACTIONS */}
 
               <div className="flex flex-wrap gap-2 sm:pb-3">
+
+                {!isOwnProfile && user && (
+                  <MessageUserButton
+                    targetUserId={profile.user_id}
+                  />
+                )}
+
                 {isOwnProfile ? (
                   <>
                     <Link
