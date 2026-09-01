@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   useEffect,
@@ -41,7 +41,7 @@ export default function PresenceHeartbeat() {
     const interval =
       window.setInterval(
         touch,
-        45_000,
+        60_000,
       );
 
 

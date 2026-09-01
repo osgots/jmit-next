@@ -1,4 +1,5 @@
-﻿import {
+import { getPublicSocialIdentityMap, identityKind } from "@/lib/social/public-identity";
+import {
   Heart,
   MessageCircle,
   Send,
@@ -12,6 +13,7 @@ import {
 
 import AppBackButton from "@/components/app-back-button";
 import SiteHeader from "@/components/site-header";
+import { PostRealtimeRefresh } from "@/components/social/realtime-refresh";
 
 import CommentControls from "@/components/social/comment-controls";
 import MentionText from "@/components/social/mention-text";
@@ -19,6 +21,7 @@ import PostControls from "@/components/social/post-controls";
 import PostMediaViewer from "@/components/social/post-media-viewer";
 import PostViewCount from "@/components/social/post-view-count";
 import SocialBadge from "@/components/social/social-badge";
+import SocialRolePill from "@/components/social/social-role-pill";
 
 import {
   addComment,
@@ -102,6 +105,21 @@ export default async function SocialPostPage({
   }
 
 
+  const authorIdentityMap =
+    await getPublicSocialIdentityMap(
+      supabase,
+      [
+        author.user_id,
+      ],
+    );
+
+
+  const authorPublicIdentity =
+    authorIdentityMap.get(
+      author.user_id,
+    );
+
+
   const {
     data: {
       user,
@@ -129,8 +147,10 @@ export default async function SocialPostPage({
 
 
   const authorAdmin =
+    authorPublicIdentity?.is_admin ===
+      true ||
     authorAppProfile?.role ===
-    "admin";
+      "admin";
 
 
   const {
@@ -156,15 +176,18 @@ export default async function SocialPostPage({
         };
 
 
+  const authorResolvedKind =
+    identityKind(
+      authorPublicIdentity,
+      author.account_type,
+    );
+
+
   const authorBadge =
-    authorAdmin
-      ? "admin"
-      : authorBlue
-        ? "blue"
-        : author.account_type ===
-            "student"
-          ? "student"
-          : null;
+    authorResolvedKind ===
+      "visitor"
+      ? null
+      : authorResolvedKind;
 
 
   const isOwner =
@@ -349,6 +372,13 @@ export default async function SocialPostPage({
     );
 
 
+  const commentIdentityMap =
+    await getPublicSocialIdentityMap(
+      supabase,
+      commentAuthorIds,
+    );
+
+
   const {
     data:
       commentProfiles,
@@ -484,6 +514,12 @@ export default async function SocialPostPage({
 
       <SiteHeader />
 
+      <PostRealtimeRefresh
+        postId={
+          post.id
+        }
+      />
+
 
       <div className="mx-auto max-w-6xl px-0 py-3 sm:px-5 sm:py-10">
 
@@ -594,6 +630,15 @@ export default async function SocialPostPage({
                       author.username
                     }
                   </p>
+
+                  <div className="mt-1">
+                    <SocialRolePill
+                      kind={
+                        authorResolvedKind
+                      }
+                      compact
+                    />
+                  </div>
                 </div>
               </Link>
 
@@ -635,20 +680,24 @@ export default async function SocialPostPage({
                       }
 
 
-                      const badge =
-                        commentRoleMap.get(
+                      const commentIdentity =
+                        commentIdentityMap.get(
                           person.user_id,
-                        ) ===
-                        "admin"
-                          ? "admin"
-                          : commentBlueSet.has(
-                                person.user_id,
-                              )
-                            ? "blue"
-                            : person.account_type ===
-                                "student"
-                              ? "student"
-                              : null;
+                        );
+
+
+                      const resolvedKind =
+                        identityKind(
+                          commentIdentity,
+                          person.account_type,
+                        );
+
+
+                      const badge =
+                        resolvedKind ===
+                          "visitor"
+                          ? null
+                          : resolvedKind;
 
 
                       const ownComment =
@@ -723,6 +772,13 @@ export default async function SocialPostPage({
                                   }
                                 />
                               )}
+
+                              <SocialRolePill
+                                kind={
+                                  resolvedKind
+                                }
+                                compact
+                              />
                             </div>
 
 

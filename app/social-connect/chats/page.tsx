@@ -7,6 +7,8 @@ import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import SocialRolePill from "@/components/social/social-role-pill";
+import { getPublicSocialIdentityMap, identityKind } from "@/lib/social/public-identity";
 
 import {
   startConversation,
@@ -359,6 +361,23 @@ export default async function ChatsPage({
       );
 
 
+  const publicIdentityMap =
+    await getPublicSocialIdentityMap(
+      supabase,
+      Array.from(
+        new Set([
+          ...otherIds,
+          ...searchResults.map(
+            (
+              item,
+            ) =>
+              item.user_id,
+          ),
+        ]),
+      ),
+    );
+
+
   const canPost =
     isAdmin ||
     profile.account_type ===
@@ -368,34 +387,19 @@ export default async function ChatsPage({
   function badgeFor(
     person: any,
   ) {
-    if (
-      roleMap.get(
-        person.user_id,
-      ) ===
-      "admin"
-    ) {
-      return "admin" as const;
-    }
+    const kind =
+      identityKind(
+        publicIdentityMap.get(
+          person.user_id,
+        ),
+        person.account_type,
+      );
 
 
-    if (
-      blueSet.has(
-        person.user_id,
-      )
-    ) {
-      return "blue" as const;
-    }
-
-
-    if (
-      person.account_type ===
-      "student"
-    ) {
-      return "student" as const;
-    }
-
-
-    return null;
+    return kind ===
+      "visitor"
+      ? null
+      : kind;
   }
 
 

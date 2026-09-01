@@ -11,6 +11,8 @@ import {
 import ChatThread from "@/components/social/chat-thread";
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import SocialRolePill from "@/components/social/social-role-pill";
+import { getPublicSocialIdentityMap, identityKind } from "@/lib/social/public-identity";
 import PresenceLabel from "@/components/social/presence-label";
 
 import {
@@ -97,6 +99,21 @@ export default async function ConversationPage({
   }
 
 
+  const otherIdentityMap =
+    await getPublicSocialIdentityMap(
+      supabase,
+      [
+        otherId,
+      ],
+    );
+
+
+  const otherPublicIdentity =
+    otherIdentityMap.get(
+      otherId,
+    );
+
+
   const {
     data:
       appProfile,
@@ -116,8 +133,10 @@ export default async function ConversationPage({
 
 
   const isAdmin =
+    otherPublicIdentity?.is_admin ===
+      true ||
     appProfile?.role ===
-    "admin";
+      "admin";
 
 
   const {
@@ -142,15 +161,18 @@ export default async function ConversationPage({
         };
 
 
+  const resolvedKind =
+    identityKind(
+      otherPublicIdentity,
+      otherProfile.account_type,
+    );
+
+
   const badge =
-    isAdmin
-      ? "admin"
-      : blue
-        ? "blue"
-        : otherProfile.account_type ===
-            "student"
-          ? "student"
-          : null;
+    resolvedKind ===
+      "visitor"
+      ? null
+      : resolvedKind;
 
 
   await supabase.rpc(
@@ -262,6 +284,15 @@ export default async function ConversationPage({
                   otherProfile.username
                 }
               </p>
+
+              <div className="mt-1">
+                <SocialRolePill
+                  kind={
+                    resolvedKind
+                  }
+                  compact
+                />
+              </div>
 
               <PresenceLabel
                 userId={

@@ -13,8 +13,10 @@ import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import SocialRolePill from "@/components/social/social-role-pill";
 import PostControls from "@/components/social/post-controls";
 import { createClient } from "@/lib/supabase/server";
+import { getPublicSocialIdentityMap, identityKind } from "@/lib/social/public-identity";
 
 import {
   addComment,
@@ -304,6 +306,18 @@ export default async function SocialConnectPage() {
       ),
     );
 
+  const publicIdentityMap =
+    await getPublicSocialIdentityMap(
+      supabase,
+      profiles.map(
+        (
+          item,
+        ) =>
+          item.user_id,
+      ),
+    );
+
+
   const likes =
     likesData ?? [];
 
@@ -319,31 +333,26 @@ export default async function SocialConnectPage() {
       return null;
     }
 
-    if (
-      roleMap.get(
+
+    const identity =
+      publicIdentityMap.get(
         profile.user_id,
-      ) === "admin"
-    ) {
-      return "admin" as const;
-    }
+      );
 
-    if (
-      blueMap.has(
-        profile.user_id,
-      )
-    ) {
-      return "blue" as const;
-    }
 
-    if (
-      profile.account_type ===
-      "student"
-    ) {
-      return "student" as const;
-    }
+    const kind =
+      identityKind(
+        identity,
+        profile.account_type,
+      );
 
-    return null;
+
+    return kind ===
+      "visitor"
+      ? null
+      : kind;
   }
+
 
   const {
     data: savedRows,
@@ -616,7 +625,7 @@ export default async function SocialConnectPage() {
 
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <p className="truncate text-sm font-black text-slate-900">
+                            <p className="truncate text-sm font-black text-slate-900 dark:text-white">
                               {author?.display_name ??
                                 "Social User"}
                             </p>
@@ -636,6 +645,17 @@ export default async function SocialConnectPage() {
                               {author?.username ??
                                 "unknown"}
                             </p>
+
+                            {badge && (
+                              <div className="mt-1">
+                                <SocialRolePill
+                                  kind={
+                                    badge
+                                  }
+                                  compact
+                                />
+                              </div>
+                            )}
 
                             {roleMap.get(
                               author?.user_id,

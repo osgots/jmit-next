@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   Bell,
@@ -113,7 +113,7 @@ export default function SocialNav({
     const interval =
       window.setInterval(
         refresh,
-        15_000,
+        60_000,
       );
 
 

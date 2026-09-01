@@ -264,3 +264,20 @@ html:not(.dark) textarea::placeholder {
   color: #fef3c7 !important;
 }
 
+
+/* ============================================================
+   SOCIAL IDENTITY VISIBILITY SAFETY
+   ============================================================ */
+
+.dark .social-identity-name {
+  color: #f8fafc !important;
+}
+
+.social-role-admin {
+  color: #5b21b6 !important;
+}
+
+.dark .social-role-admin {
+  color: #ede9fe !important;
+}
+

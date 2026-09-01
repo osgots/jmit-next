@@ -1,4 +1,4 @@
-﻿import {
+import {
   ArrowLeft,
   Users,
 } from "lucide-react";
@@ -11,7 +11,9 @@ import {
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import SocialRolePill from "@/components/social/social-role-pill";
 import { createClient } from "@/lib/supabase/server";
+import { getPublicSocialIdentityMap, identityKind } from "@/lib/social/public-identity";
 
 import {
   toggleFollow,
@@ -199,6 +201,13 @@ export default async function FollowersPage({
     );
 
 
+  const publicIdentityMap =
+    await getPublicSocialIdentityMap(
+      supabase,
+      ids,
+    );
+
+
   const followingSet =
     new Set(
       (
@@ -245,26 +254,25 @@ export default async function FollowersPage({
           {(people ?? []).map(
             (person) => {
 
-              const isAdmin =
-                roleMap.get(
-                  person.user_id,
-                ) ===
-                "admin";
-
-              const isBlue =
-                blueSet.has(
+              const publicIdentity =
+                publicIdentityMap.get(
                   person.user_id,
                 );
 
+
+              const resolvedKind =
+                identityKind(
+                  publicIdentity,
+                  person.account_type,
+                );
+
+
               const badge =
-                isAdmin
-                  ? "admin"
-                  : isBlue
-                    ? "blue"
-                    : person.account_type ===
-                        "student"
-                      ? "student"
-                      : null;
+                resolvedKind ===
+                  "visitor"
+                  ? null
+                  : resolvedKind;
+
 
               const isMe =
                 user?.id ===
@@ -309,7 +317,7 @@ export default async function FollowersPage({
 
                       <div className="flex items-center gap-1">
 
-                        <p className="truncate font-black text-slate-950">
+                        <p className="truncate font-black text-slate-950 dark:text-white">
                           {
                             person.display_name
                           }
@@ -331,6 +339,15 @@ export default async function FollowersPage({
                           person.username
                         }
                       </p>
+
+                      <div className="mt-1">
+                        <SocialRolePill
+                          kind={
+                            resolvedKind
+                          }
+                          compact
+                        />
+                      </div>
 
                     </div>
 

@@ -2,11 +2,16 @@
 
 import {
   Check,
+  Loader2,
   MoreHorizontal,
   Pencil,
   Trash2,
   X,
 } from "lucide-react";
+
+import {
+  useRouter,
+} from "next/navigation";
 
 import {
   useState,
@@ -31,17 +36,171 @@ export default function CommentControls({
   canEdit: boolean;
   canDelete: boolean;
 }) {
+  const router =
+    useRouter();
+
+
   const [
     menu,
     setMenu,
   ] =
     useState(false);
 
+
   const [
     editing,
     setEditing,
   ] =
     useState(false);
+
+
+  const [
+    pending,
+    setPending,
+  ] =
+    useState(false);
+
+
+  const [
+    hidden,
+    setHidden,
+  ] =
+    useState(false);
+
+
+  async function saveEdit(
+    event:
+      React.FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+
+    if (pending) {
+      return;
+    }
+
+
+    const form =
+      event.currentTarget;
+
+
+    const data =
+      new FormData(
+        form,
+      );
+
+
+    setPending(
+      true,
+    );
+
+
+    try {
+
+      await editComment(
+        data,
+      );
+
+
+      setEditing(
+        false,
+      );
+
+
+      /*
+       * RSC refresh, NOT browser reload.
+       */
+      router.refresh();
+
+    } finally {
+
+      setPending(
+        false,
+      );
+    }
+  }
+
+
+  async function removeComment(
+    event:
+      React.FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+
+    if (pending) {
+      return;
+    }
+
+
+    if (
+      !window.confirm(
+        "Delete this comment?",
+      )
+    ) {
+      return;
+    }
+
+
+    const data =
+      new FormData(
+        event.currentTarget,
+      );
+
+
+    /*
+     * Optimistic removal.
+     * It disappears immediately before network response.
+     */
+    setHidden(
+      true,
+    );
+
+
+    setPending(
+      true,
+    );
+
+
+    try {
+
+      await deleteComment(
+        data,
+      );
+
+
+      router.refresh();
+
+    } catch (
+      error
+    ) {
+
+      /*
+       * Restore it if request itself fails.
+       */
+      setHidden(
+        false,
+      );
+
+
+      console.error(
+        error,
+      );
+
+    } finally {
+
+      setPending(
+        false,
+      );
+    }
+  }
+
+
+  if (
+    hidden
+  ) {
+    return null;
+  }
 
 
   if (
@@ -58,11 +217,12 @@ export default function CommentControls({
   ) {
     return (
       <form
-        action={
-          editComment
+        onSubmit={
+          saveEdit
         }
         className="mt-2 flex w-full gap-2"
       >
+
         <input
           type="hidden"
           name="comment_id"
@@ -70,6 +230,7 @@ export default function CommentControls({
             commentId
           }
         />
+
 
         <input
           type="hidden"
@@ -79,36 +240,59 @@ export default function CommentControls({
           }
         />
 
+
         <input
           name="body"
           required
-          maxLength={1000}
+          maxLength={
+            1000
+          }
           defaultValue={
             body
           }
           autoFocus
-          className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+          disabled={
+            pending
+          }
+          className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
         />
 
+
         <button
+          disabled={
+            pending
+          }
           title="Save"
-          className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white"
+          className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white disabled:opacity-50"
         >
-          <Check
-            size={15}
-          />
+
+          {pending ? (
+            <Loader2
+              size={15}
+              className="animate-spin"
+            />
+          ) : (
+            <Check
+              size={15}
+            />
+          )}
         </button>
+
 
         <button
           type="button"
+          disabled={
+            pending
+          }
           title="Cancel"
           onClick={() =>
             setEditing(
               false,
             )
           }
-          className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+          className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-300"
         >
+
           <X
             size={15}
           />
@@ -134,6 +318,7 @@ export default function CommentControls({
         className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 dark:hover:bg-slate-800"
         aria-label="Comment options"
       >
+
         <MoreHorizontal
           size={16}
         />
@@ -146,7 +331,11 @@ export default function CommentControls({
           {canEdit && (
             <button
               type="button"
+              disabled={
+                pending
+              }
               onClick={() => {
+
                 setEditing(
                   true,
                 );
@@ -155,8 +344,9 @@ export default function CommentControls({
                   false,
                 );
               }}
-              className="flex w-full items-center gap-2 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="flex w-full items-center gap-2 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:text-slate-200 dark:hover:bg-slate-800"
             >
+
               <Pencil
                 size={14}
               />
@@ -168,21 +358,11 @@ export default function CommentControls({
 
           {canDelete && (
             <form
-              action={
-                deleteComment
+              onSubmit={
+                removeComment
               }
-              onSubmit={(
-                event,
-              ) => {
-                if (
-                  !window.confirm(
-                    "Delete this comment?",
-                  )
-                ) {
-                  event.preventDefault();
-                }
-              }}
             >
+
               <input
                 type="hidden"
                 name="comment_id"
@@ -190,6 +370,7 @@ export default function CommentControls({
                   commentId
                 }
               />
+
 
               <input
                 type="hidden"
@@ -199,10 +380,24 @@ export default function CommentControls({
                 }
               />
 
-              <button className="flex w-full items-center gap-2 px-3 py-3 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
-                <Trash2
-                  size={14}
-                />
+
+              <button
+                disabled={
+                  pending
+                }
+                className="flex w-full items-center gap-2 px-3 py-3 text-sm font-bold text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30"
+              >
+
+                {pending ? (
+                  <Loader2
+                    size={14}
+                    className="animate-spin"
+                  />
+                ) : (
+                  <Trash2
+                    size={14}
+                  />
+                )}
 
                 Delete
               </button>

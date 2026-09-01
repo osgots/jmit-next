@@ -3,6 +3,7 @@
   | "blue"
   | "student";
 
+
 export default function SocialBadge({
   kind,
   size = 19,
@@ -10,102 +11,118 @@ export default function SocialBadge({
   kind: SocialBadgeKind;
   size?: number;
 }) {
+  const title =
+    kind === "admin"
+      ? "JMIT Next Administrator"
+      : kind === "blue"
+        ? "Verified Student"
+        : "Student Account";
+
+
   /*
-   * Normal students are NOT verified.
-   * They receive a simple yellow identity dot.
+   * Student accounts deliberately get a DOT,
+   * never a checkmark.
    */
-  if (kind === "student") {
+  if (
+    kind ===
+    "student"
+  ) {
+    const dot =
+      Math.max(
+        8,
+        Math.round(
+          size * 0.55,
+        ),
+      );
+
+
     return (
       <span
-        title="Student account"
-        aria-label="Student account"
+        title={
+          title
+        }
+        aria-label={
+          title
+        }
         className="inline-flex shrink-0 items-center justify-center"
         style={{
-          width: size,
-          height: size,
+          width:
+            size,
+          height:
+            size,
         }}
       >
         <span
-          className="block rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-500 shadow-[0_0_6px_rgba(245,158,11,.35)]"
+          className="rounded-full border border-amber-500 bg-amber-400 shadow-[0_0_7px_rgba(245,158,11,.65)] ring-2 ring-white dark:ring-slate-950"
           style={{
-            width: Math.max(8, Math.round(size * 0.55)),
-            height: Math.max(8, Math.round(size * 0.55)),
+            width:
+              dot,
+            height:
+              dot,
           }}
         />
       </span>
     );
   }
 
-  const id =
-    `badge-${kind}-${Math.random()
-      .toString(36)
-      .slice(2)}`;
 
-  const isAdmin =
-    kind === "admin";
+  const admin =
+    kind ===
+    "admin";
 
-  const title =
-    isAdmin
-      ? "JMIT Next Administrator"
-      : "Admin Verified Student";
-
-  const gradient =
-    isAdmin
-      ? [
-          "#6d28d9",
-          "#a855f7",
-          "#ec4899",
-          "#6366f1",
-        ]
-      : [
-          "#0284c7",
-          "#2563eb",
-          "#06b6d4",
-          "#3b82f6",
-        ];
 
   return (
     <span
-      title={title}
-      aria-label={title}
-      className="inline-flex shrink-0"
+      title={
+        title
+      }
+      aria-label={
+        title
+      }
+      className={`inline-flex shrink-0 items-center justify-center rounded-full ring-2 ring-white shadow-md dark:ring-slate-950 ${
+        admin
+          ? "shadow-violet-500/40"
+          : "shadow-blue-500/40"
+      }`}
+      style={{
+        width:
+          size,
+        height:
+          size,
+      }}
     >
       <svg
-        width={size}
-        height={size}
+        width={
+          size
+        }
+        height={
+          size
+        }
         viewBox="0 0 24 24"
         aria-hidden="true"
-        className={
-          isAdmin
-            ? "drop-shadow-[0_0_5px_rgba(168,85,247,.55)]"
-            : ""
-        }
       >
-        <defs>
-          <linearGradient
-            id={id}
-            x1="0"
-            y1="0"
-            x2="24"
-            y2="24"
-          >
-            <stop offset="0%" stopColor={gradient[0]} />
-            <stop offset="35%" stopColor={gradient[1]} />
-            <stop offset="70%" stopColor={gradient[2]} />
-            <stop offset="100%" stopColor={gradient[3]} />
-          </linearGradient>
-        </defs>
 
         <path
-          fill={`url(#${id})`}
-          d="M12 1.8 14.5 4l3.3-.2.9 3.1 2.8 1.8-1.2 3 1.2 3-2.8 1.8-.9 3.1-3.3-.2L12 22.2 9.5 20l-3.3.2-.9-3.1-2.8-1.8 1.2-3-1.2-3 2.8-1.8.9-3.1 3.3.2L12 1.8Z"
+          d="M12 1.65 14.55 3.9l3.38-.17.9 3.22 2.87 1.82-1.24 3.23 1.24 3.23-2.87 1.82-.9 3.22-3.38-.17L12 22.35 9.45 20.1l-3.38.17-.9-3.22-2.87-1.82L3.54 12 2.3 8.77l2.87-1.82.9-3.22 3.38.17L12 1.65Z"
+          fill={
+            admin
+              ? "#7c3aed"
+              : "#2563eb"
+          }
+          stroke={
+            admin
+              ? "#a78bfa"
+              : "#60a5fa"
+          }
+          strokeWidth="0.8"
         />
 
+
         <path
-          d="m8 12.2 2.5 2.5 5.6-6"
+          d="m7.8 12.1 2.7 2.7 5.9-6.2"
           fill="none"
-          stroke="white"
-          strokeWidth="2"
+          stroke="#ffffff"
+          strokeWidth="2.65"
           strokeLinecap="round"
           strokeLinejoin="round"
         />

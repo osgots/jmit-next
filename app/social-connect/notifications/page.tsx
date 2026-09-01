@@ -1,4 +1,4 @@
-﻿import {
+import {
   Bell,
   CheckCheck,
   Heart,
@@ -13,6 +13,8 @@ import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import SocialRolePill from "@/components/social/social-role-pill";
+import { getPublicSocialIdentityMap, identityKind } from "@/lib/social/public-identity";
 import NotificationLink from "@/components/social/notification-link";
 
 import {
@@ -188,6 +190,13 @@ export default async function NotificationsPage() {
     );
 
 
+  const publicIdentityMap =
+    await getPublicSocialIdentityMap(
+      supabase,
+      actors,
+    );
+
+
   const unread =
     (
       notifications ??
@@ -360,22 +369,27 @@ export default async function NotificationsPage() {
                   : null;
 
 
-              const badge =
-                !actor
-                  ? null
-                  : roleMap.get(
+              const publicIdentity =
+                actor
+                  ? publicIdentityMap.get(
                       actor.user_id,
-                    ) ===
-                    "admin"
-                    ? "admin"
-                    : blueSet.has(
-                          actor.user_id,
-                        )
-                      ? "blue"
-                      : actor.account_type ===
-                          "student"
-                        ? "student"
-                        : null;
+                    )
+                  : undefined;
+
+
+              const resolvedKind =
+                identityKind(
+                  publicIdentity,
+                  actor?.account_type,
+                );
+
+
+              const badge =
+                !actor ||
+                resolvedKind ===
+                  "visitor"
+                  ? null
+                  : resolvedKind;
 
 
               return (
@@ -432,6 +446,15 @@ export default async function NotificationsPage() {
                             size={
                               16
                             }
+                          />
+                        )}
+
+                        {actor && (
+                          <SocialRolePill
+                            kind={
+                              resolvedKind
+                            }
+                            compact
                           />
                         )}
                       </div>

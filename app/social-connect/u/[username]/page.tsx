@@ -17,11 +17,14 @@ import {
 import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
+import { ProfileRealtimeRefresh } from "@/components/social/realtime-refresh";
 import SocialBadge from "@/components/social/social-badge";
+import SocialRolePill from "@/components/social/social-role-pill";
 import PresenceLabel from "@/components/social/presence-label";
 import UserActionsMenu from "@/components/social/user-actions-menu";
 import MessageUserButton from "@/components/social/message-user-button";
 import { createClient } from "@/lib/supabase/server";
+import { getPublicSocialIdentityMap, identityKind } from "@/lib/social/public-identity";
 
 import {
   toggleFollow,
@@ -64,6 +67,21 @@ export default async function SocialProfilePage({
   }
 
 
+  const publicIdentityMap =
+    await getPublicSocialIdentityMap(
+      supabase,
+      [
+        profile.user_id,
+      ],
+    );
+
+
+  const publicIdentity =
+    publicIdentityMap.get(
+      profile.user_id,
+    );
+
+
   const {
     data: { user },
   } =
@@ -90,8 +108,10 @@ export default async function SocialProfilePage({
 
 
   const isAdmin =
+    publicIdentity?.is_admin ===
+      true ||
     targetAppProfile?.role ===
-    "admin";
+      "admin";
 
 
   const {
@@ -220,25 +240,31 @@ export default async function SocialProfilePage({
 
 
   const badge =
-    isAdmin
-      ? "admin"
-      : blue
-        ? "blue"
-        : profile.account_type ===
-            "student"
-          ? "student"
-          : null;
+    publicIdentity?.badge_kind ??
+    (
+      isAdmin
+        ? "admin"
+        : blue
+          ? "blue"
+          : profile.account_type ===
+              "student"
+            ? "student"
+            : null
+    );
 
 
   const accountTitle =
-    isAdmin
-      ? "Administrator"
-      : blue
-        ? "Verified Student"
-        : profile.account_type ===
-            "student"
-          ? "Student"
-          : "Visitor";
+    publicIdentity?.account_title ??
+    (
+      isAdmin
+        ? "Administrator"
+        : blue
+          ? "Verified Student"
+          : profile.account_type ===
+              "student"
+            ? "Student"
+            : "Visitor"
+    );
 
 
   const canPost =
@@ -248,15 +274,21 @@ export default async function SocialProfilePage({
 
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb]">
+    <main className="min-h-screen bg-[#f5f7fb] dark:bg-slate-950">
       <SiteHeader />
+
+      <ProfileRealtimeRefresh
+        userId={
+          profile.user_id
+        }
+      />
 
       <div className="mx-auto max-w-5xl px-0 pb-16 sm:px-5 sm:pt-8">
 
 
         {/* FACEBOOK-LIKE PROFILE HEADER */}
 
-        <section className="overflow-hidden border-y border-slate-200 bg-white shadow-sm sm:rounded-[30px] sm:border">
+        <section className="overflow-hidden border-y border-slate-200 bg-white shadow-sm sm:rounded-[30px] sm:border dark:border-slate-800 dark:bg-slate-900">
           <div
             className={`relative h-44 sm:h-56 ${
               isAdmin
@@ -320,7 +352,7 @@ export default async function SocialProfilePage({
 
               <div className="min-w-0 flex-1 sm:pb-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-3xl font-black tracking-[-0.04em] text-[#071a3d] sm:text-4xl">
+                  <h1 className="truncate text-3xl font-black tracking-[-0.04em] text-[#071a3d] dark:text-white sm:text-4xl">
                     {
                       profile.display_name
                     }
@@ -352,22 +384,12 @@ export default async function SocialProfilePage({
                 />
 
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span
-                    className={`rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.13em] ${
-                      isAdmin
-                        ? "bg-violet-50 text-violet-700"
-                        : blue
-                          ? "bg-blue-50 text-blue-700"
-                          : profile.account_type ===
-                              "student"
-                            ? "bg-amber-50 text-amber-700"
-                            : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {
-                      accountTitle
+                  <SocialRolePill
+                    kind={
+                      badge ??
+                      "visitor"
                     }
-                  </span>
+                  />
 
                   {isAdmin && (
                     <ShieldCheck

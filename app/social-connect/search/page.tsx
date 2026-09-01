@@ -1,4 +1,4 @@
-﻿import {
+import {
   Search,
   UserPlus,
   Users,
@@ -8,7 +8,9 @@ import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import SocialRolePill from "@/components/social/social-role-pill";
 import { createClient } from "@/lib/supabase/server";
+import { getPublicSocialIdentityMap, identityKind } from "@/lib/social/public-identity";
 
 import {
   toggleFollow,
@@ -223,6 +225,13 @@ export default async function SocialSearchPage({
     );
 
 
+  const publicIdentityMap =
+    await getPublicSocialIdentityMap(
+      supabase,
+      userIds,
+    );
+
+
   const followingSet =
     new Set(
       (
@@ -319,28 +328,34 @@ export default async function SocialSearchPage({
           {profiles.map(
             (profile) => {
 
-              const isAdmin =
-                roleMap.get(
-                  profile.user_id,
-                ) ===
-                "admin";
-
-
-              const blue =
-                blueSet.has(
+              const publicIdentity =
+                publicIdentityMap.get(
                   profile.user_id,
                 );
 
 
+              const isAdmin =
+                publicIdentity?.is_admin ===
+                  true;
+
+
+              const blue =
+                publicIdentity?.is_blue_verified ===
+                  true;
+
+
+              const resolvedKind =
+                identityKind(
+                  publicIdentity,
+                  profile.account_type,
+                );
+
+
               const badge =
-                isAdmin
-                  ? "admin"
-                  : blue
-                    ? "blue"
-                    : profile.account_type ===
-                        "student"
-                      ? "student"
-                      : null;
+                resolvedKind ===
+                  "visitor"
+                  ? null
+                  : resolvedKind;
 
 
               const following =
@@ -391,7 +406,7 @@ export default async function SocialSearchPage({
 
                       <div className="flex items-center gap-1.5">
 
-                        <p className="truncate font-black text-slate-900">
+                        <p className="truncate font-black text-slate-900 dark:text-white">
                           {
                             profile.display_name
                           }
@@ -416,16 +431,17 @@ export default async function SocialSearchPage({
                       </p>
 
 
-                      <p className="mt-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
-                        {isAdmin
-                          ? "Administrator"
-                          : blue
-                            ? "Verified Student"
-                            : profile.account_type ===
-                                "student"
-                              ? "Student"
-                              : "Visitor"}
-                      </p>
+                      <div className="mt-1">
+                        <SocialRolePill
+                          kind={
+                            identityKind(
+                              publicIdentity,
+                              profile.account_type,
+                            )
+                          }
+                          compact
+                        />
+                      </div>
 
 
                       {profile.bio && (
