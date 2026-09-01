@@ -1,4 +1,4 @@
-﻿import {
+import {
   Search,
   Heart,
   MessageCircle,
@@ -14,7 +14,6 @@ import Link from "next/link";
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
 import PostControls from "@/components/social/post-controls";
-import SocialNav from "@/components/social/social-nav";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -854,14 +853,7 @@ export default async function SocialConnectPage() {
           </div>
         )}
       </section>
-
-      <SocialNav
-        username={myProfile?.username ?? null}
-        canPost={Boolean(canPost)}
-        unread={unreadNotifications ?? 0}
-      />
-
-      <div className="h-20 md:h-0" />
+<div className="h-20 md:h-0" />
     </main>
   );
 }

@@ -1,4 +1,4 @@
-﻿import {
+import {
   MessageCircle,
   Search,
 } from "lucide-react";
@@ -7,7 +7,6 @@ import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
-import SocialNav from "@/components/social/social-nav";
 
 import {
   startConversation,
@@ -699,20 +698,6 @@ export default async function ChatsPage({
           </div>
         </section>
       </div>
-
-
-      <SocialNav
-        username={
-          profile.username
-        }
-        canPost={
-          canPost
-        }
-        unread={
-          unreadNotifications ??
-          0
-        }
-      />
-    </main>
+</main>
   );
 }

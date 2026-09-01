@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   Check,
@@ -95,6 +95,29 @@ export default function ChatThread({
     setEditBody,
   ] =
     useState("");
+
+
+  const [
+    otherTyping,
+    setOtherTyping,
+  ] =
+    useState(false);
+
+
+  const channelRef =
+    useRef<ReturnType<
+      typeof supabase.channel
+    > | null>(
+      null,
+    );
+
+
+  const typingStopRef =
+    useRef<ReturnType<
+      typeof setTimeout
+    > | null>(
+      null,
+    );
 
 
   const bottomRef =
@@ -249,10 +272,82 @@ export default function ChatThread({
             }
           },
         )
+        .on(
+          "broadcast",
+          {
+            event:
+              "typing",
+          },
+          ({
+            payload,
+          }) => {
+            const typedBy =
+              String(
+                (
+                  payload as {
+                    userId?: string;
+                  }
+                ).userId ??
+                "",
+              );
+
+
+            if (
+              typedBy ===
+              currentUserId
+            ) {
+              return;
+            }
+
+
+            const typing =
+              Boolean(
+                (
+                  payload as {
+                    typing?: boolean;
+                  }
+                ).typing,
+              );
+
+
+            setOtherTyping(
+              typing,
+            );
+
+
+            if (typing) {
+              window.setTimeout(
+                () =>
+                  setOtherTyping(
+                    false,
+                  ),
+                2500,
+              );
+            }
+          },
+        )
         .subscribe();
 
 
+    channelRef.current =
+      channel;
+
+
     return () => {
+
+      if (
+        typingStopRef.current
+      ) {
+        clearTimeout(
+          typingStopRef.current,
+        );
+      }
+
+
+      channelRef.current =
+        null;
+
+
       supabase.removeChannel(
         channel,
       );
@@ -272,6 +367,71 @@ export default function ChatThread({
   }, [
     ordered.length,
   ]);
+
+
+  function updateTyping(
+    value: string,
+  ) {
+    setBody(
+      value,
+    );
+
+
+    const typing =
+      Boolean(
+        value.trim(),
+      );
+
+
+    void channelRef.current?.send({
+      type:
+        "broadcast",
+
+      event:
+        "typing",
+
+      payload: {
+        userId:
+          currentUserId,
+
+        typing,
+      },
+    });
+
+
+    if (
+      typingStopRef.current
+    ) {
+      clearTimeout(
+        typingStopRef.current,
+      );
+    }
+
+
+    if (typing) {
+      typingStopRef.current =
+        setTimeout(
+          () => {
+            void channelRef.current?.send({
+              type:
+                "broadcast",
+
+              event:
+                "typing",
+
+              payload: {
+                userId:
+                  currentUserId,
+
+                typing:
+                  false,
+              },
+            });
+          },
+          1400,
+        );
+    }
+  }
 
 
   async function sendMessage(
@@ -351,6 +511,24 @@ export default function ChatThread({
     setBody(
       "",
     );
+
+
+    void channelRef.current?.send({
+      type:
+        "broadcast",
+
+      event:
+        "typing",
+
+      payload: {
+        userId:
+          currentUserId,
+
+        typing:
+          false,
+      },
+    });
+
 
     setBusy(
       false,
@@ -702,6 +880,24 @@ export default function ChatThread({
       </div>
 
 
+      {otherTyping && (
+        <div className="px-5 pb-2 text-xs font-semibold text-slate-400">
+          typing
+          <span className="ml-1 inline-flex gap-0.5">
+            <span className="animate-pulse">
+              .
+            </span>
+            <span className="animate-pulse [animation-delay:150ms]">
+              .
+            </span>
+            <span className="animate-pulse [animation-delay:300ms]">
+              .
+            </span>
+          </span>
+        </div>
+      )}
+
+
       {error && (
         <div className="mx-4 mb-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
           {error}
@@ -724,7 +920,7 @@ export default function ChatThread({
             onChange={(
               event,
             ) =>
-              setBody(
+              updateTyping(
                 event.target.value,
               )
             }

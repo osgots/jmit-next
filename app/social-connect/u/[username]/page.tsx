@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadgeCheck,
   Camera,
   Grid3X3,
@@ -18,6 +18,8 @@ import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import PresenceLabel from "@/components/social/presence-label";
+import UserActionsMenu from "@/components/social/user-actions-menu";
 import MessageUserButton from "@/components/social/message-user-button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -356,6 +358,12 @@ export default async function SocialProfilePage({
                   }
                 </p>
 
+                <PresenceLabel
+                  userId={
+                    profile.user_id
+                  }
+                />
+
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <span
                     className={`rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.13em] ${
@@ -391,6 +399,14 @@ export default async function SocialProfilePage({
                 {!isOwnProfile && user && (
                   <MessageUserButton
                     targetUserId={profile.user_id}
+                  />
+                )}
+
+                {!isOwnProfile && user && (
+                  <UserActionsMenu
+                    targetUserId={
+                      profile.user_id
+                    }
                   />
                 )}
 

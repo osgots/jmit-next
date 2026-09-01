@@ -1,4 +1,4 @@
-﻿import {
+import {
   ArrowLeft,
 } from "lucide-react";
 
@@ -11,6 +11,7 @@ import {
 import ChatThread from "@/components/social/chat-thread";
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import PresenceLabel from "@/components/social/presence-label";
 
 import {
   requireSocialProfile,
@@ -261,6 +262,12 @@ export default async function ConversationPage({
                   otherProfile.username
                 }
               </p>
+
+              <PresenceLabel
+                userId={
+                  otherProfile.user_id
+                }
+              />
             </div>
           </Link>
         </header>
