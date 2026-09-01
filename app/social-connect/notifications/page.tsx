@@ -13,10 +13,10 @@ import Link from "next/link";
 
 import SiteHeader from "@/components/site-header";
 import SocialBadge from "@/components/social/social-badge";
+import NotificationLink from "@/components/social/notification-link";
 
 import {
   markAllNotificationsRead,
-  markNotificationRead,
 } from "../actions";
 
 import {
@@ -379,29 +379,19 @@ export default async function NotificationsPage() {
 
 
               return (
-                <form
+                <NotificationLink
                   key={
                     item.id
                   }
-                  action={
-                    markNotificationRead
+                  notificationId={
+                    item.id
                   }
-                >
-                  <input
-                    type="hidden"
-                    name="id"
-                    value={
-                      item.id
-                    }
-                  />
-
-                  <Link
-                    href={
-                      destination(
-                        item,
-                        actor,
-                      )
-                    }
+                  destination={
+                    destination(
+                      item,
+                      actor,
+                    )
+                  }
                     className={`flex items-center gap-4 rounded-[20px] border p-4 transition hover:bg-blue-50 dark:hover:bg-slate-800 ${
                       item.is_read
                         ? "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
@@ -462,8 +452,7 @@ export default async function NotificationsPage() {
                     {!item.is_read && (
                       <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-blue-600" />
                     )}
-                  </Link>
-                </form>
+                  </NotificationLink>
               );
             },
           )}

@@ -18,6 +18,8 @@ import {
   toggleSave,
 } from "@/app/social-connect/actions";
 
+import SharePostButton from "@/components/social/share-post-button";
+
 
 export default function PostControls({
   postId,
@@ -39,6 +41,13 @@ export default function PostControls({
 
   return (
     <div className="ml-auto flex items-center gap-1">
+
+      <SharePostButton
+        postId={
+          postId
+        }
+      />
+
 
       <form
         action={
@@ -68,15 +77,10 @@ export default function PostControls({
               ? "Remove from saved"
               : "Save post"
           }
-          aria-label={
-            isSaved
-              ? "Unsave post"
-              : "Save post"
-          }
           className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${
             isSaved
               ? "text-blue-700 dark:text-blue-400"
-              : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+              : "text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
           }`}
         >
           <Bookmark
@@ -93,6 +97,7 @@ export default function PostControls({
 
       {isOwner && (
         <div className="relative">
+
           <button
             type="button"
             onClick={() =>
@@ -103,8 +108,7 @@ export default function PostControls({
                   !value,
               )
             }
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-            aria-label="Post options"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             <MoreHorizontal
               size={21}
@@ -151,9 +155,7 @@ export default function PostControls({
                   }
                 />
 
-                <button
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                >
+                <button className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
                   <Trash2
                     size={15}
                   />

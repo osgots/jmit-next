@@ -14,6 +14,7 @@ import AppBackButton from "@/components/app-back-button";
 import SiteHeader from "@/components/site-header";
 
 import CommentControls from "@/components/social/comment-controls";
+import MentionText from "@/components/social/mention-text";
 import PostControls from "@/components/social/post-controls";
 import PostMediaViewer from "@/components/social/post-media-viewer";
 import PostViewCount from "@/components/social/post-view-count";
@@ -601,9 +602,11 @@ export default async function SocialPostPage({
                 <div className="border-b border-slate-100 p-4 sm:p-5 dark:border-slate-800">
 
                   <p className="whitespace-pre-wrap break-words text-[15px] leading-7 text-slate-700 dark:text-slate-200">
-                    {
-                      post.caption
-                    }
+                    <MentionText
+                      text={
+                        post.caption
+                      }
+                    />
                   </p>
                 </div>
               )}
@@ -724,9 +727,11 @@ export default async function SocialPostPage({
 
 
                             <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700 dark:text-slate-300">
-                              {
-                                comment.body
-                              }
+                              <MentionText
+                                text={
+                                  comment.body
+                                }
+                              />
                             </p>
 
 
