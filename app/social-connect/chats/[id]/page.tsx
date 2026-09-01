@@ -198,6 +198,7 @@ export default async function ConversationPage({
         <header className="flex h-18 shrink-0 items-center gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
 
           <Link
+            replace
             href="/social-connect/chats"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
           >
@@ -208,6 +209,7 @@ export default async function ConversationPage({
 
 
           <Link
+            replace
             href={`/social-connect/u/${otherProfile.username}`}
             className="flex min-w-0 items-center gap-3"
           >

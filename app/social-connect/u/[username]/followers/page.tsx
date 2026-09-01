@@ -218,6 +218,7 @@ export default async function FollowersPage({
       <div className="mx-auto max-w-2xl px-5 py-10">
 
         <Link
+          replace
           href={`/social-connect/u/${profile.username}`}
           className="inline-flex items-center gap-2 text-sm font-black text-blue-700"
         >
@@ -279,6 +280,7 @@ export default async function FollowersPage({
                 >
 
                   <Link
+                    replace
                     href={`/social-connect/u/${person.username}`}
                     className="flex min-w-0 flex-1 items-center gap-3"
                   >

@@ -146,6 +146,7 @@ export default async function SocialSettingsPage() {
         </div>
 
         <Link
+          replace
           href={`/social-connect/u/${profile.username}`}
           className="mt-6 block text-center text-sm font-black text-blue-700"
         >

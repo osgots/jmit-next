@@ -2,6 +2,7 @@
   BadgeCheck,
   Camera,
   Grid3X3,
+  Eye,
   ImageIcon,
   Pencil,
   Plus,
@@ -563,12 +564,30 @@ export default async function SocialProfilePage({
         {/* INSTAGRAM-LIKE POSTS */}
 
         <section className="mt-6 bg-white sm:rounded-[28px] sm:border sm:border-slate-200">
-          <div className="flex items-center justify-center gap-2 border-b border-slate-200 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#071a3d]">
-            <Grid3X3
-              size={16}
-            />
+          <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
 
-            Posts
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[#071a3d] dark:text-white">
+              <Grid3X3
+                size={16}
+              />
+
+              Posts
+            </div>
+
+
+            {isOwnProfile &&
+              canPost && (
+              <Link
+                href="/social-connect/new"
+                className="flex items-center gap-2 rounded-xl bg-[#071f50] px-4 py-2.5 text-xs font-black text-white dark:bg-blue-600"
+              >
+                <Plus
+                  size={15}
+                />
+
+                Add Post
+              </Link>
+            )}
           </div>
 
           {(posts ?? []).length ===
@@ -614,7 +633,7 @@ export default async function SocialProfilePage({
                     key={
                       post.id
                     }
-                    href={`/social-connect/post/${post.id}`}
+                    href={`/social-connect/post/${post.id}?from=${encodeURIComponent(`/social-connect/u/${profile.username}`)}`}
                     className="group relative aspect-square overflow-hidden bg-slate-100 sm:rounded-xl"
                   >
                     {post.media_type ===
@@ -646,6 +665,17 @@ export default async function SocialProfilePage({
                     )}
 
                     <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
+
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-lg bg-black/60 px-2 py-1 text-[10px] font-black text-white backdrop-blur">
+                      <Eye
+                        size={12}
+                      />
+
+                      {Number(
+                        post.view_count ??
+                        0,
+                      ).toLocaleString()}
+                    </div>
                   </Link>
                 ),
               )}

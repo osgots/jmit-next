@@ -26,11 +26,14 @@ export default function SocialNav({
 
   return (
     <>
+      {/* MOBILE */}
+
       <nav className="fixed bottom-0 left-0 right-0 z-[65] border-t border-slate-200 bg-white/95 px-1 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl md:hidden dark:border-slate-800 dark:bg-slate-950/95">
 
         <div className="mx-auto flex max-w-lg items-center justify-around">
 
           <Link
+            replace
             href="/social-connect"
             className={item}
             title="Feed"
@@ -42,6 +45,7 @@ export default function SocialNav({
 
 
           <Link
+            replace
             href="/social-connect/search"
             className={item}
             title="Search"
@@ -53,6 +57,10 @@ export default function SocialNav({
 
 
           {canPost ? (
+            /*
+             * Create is a task/modal-like route,
+             * so it intentionally PUSHES.
+             */
             <Link
               href="/social-connect/new"
               className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white"
@@ -64,6 +72,7 @@ export default function SocialNav({
             </Link>
           ) : (
             <Link
+              replace
               href="/social-connect/saved"
               className={item}
               title="Saved"
@@ -76,6 +85,7 @@ export default function SocialNav({
 
 
           <Link
+            replace
             href="/social-connect/chats"
             className={item}
             title="Chats"
@@ -87,6 +97,7 @@ export default function SocialNav({
 
 
           <Link
+            replace
             href="/social-connect/notifications"
             className={item}
             title="Notifications"
@@ -108,6 +119,7 @@ export default function SocialNav({
 
 
           <Link
+            replace
             href={
               username
                 ? `/social-connect/u/${username}`
@@ -124,9 +136,12 @@ export default function SocialNav({
       </nav>
 
 
+      {/* DESKTOP */}
+
       <nav className="fixed left-1/2 top-[118px] z-[55] hidden -translate-x-1/2 items-center gap-1 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-lg backdrop-blur-xl md:flex dark:border-slate-800 dark:bg-slate-900/95">
 
         <Link
+          replace
           href="/social-connect"
           className={item}
           title="Feed"
@@ -136,7 +151,9 @@ export default function SocialNav({
           />
         </Link>
 
+
         <Link
+          replace
           href="/social-connect/search"
           className={item}
           title="Search"
@@ -145,6 +162,7 @@ export default function SocialNav({
             size={18}
           />
         </Link>
+
 
         {canPost && (
           <Link
@@ -158,7 +176,9 @@ export default function SocialNav({
           </Link>
         )}
 
+
         <Link
+          replace
           href="/social-connect/chats"
           className={item}
           title="Chats"
@@ -168,7 +188,9 @@ export default function SocialNav({
           />
         </Link>
 
+
         <Link
+          replace
           href="/social-connect/notifications"
           className={item}
           title="Notifications"
@@ -188,7 +210,9 @@ export default function SocialNav({
           )}
         </Link>
 
+
         <Link
+          replace
           href="/social-connect/saved"
           className={item}
           title="Saved"
@@ -198,8 +222,10 @@ export default function SocialNav({
           />
         </Link>
 
+
         {username && (
           <Link
+            replace
             href={`/social-connect/u/${username}`}
             className={item}
             title="Profile"
