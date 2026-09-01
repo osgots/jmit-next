@@ -1,4 +1,6 @@
-﻿"use client";
+"use client";
+
+import CampusEmailNotice from "@/components/campus-email-notice";
 
 import {
   useState,
@@ -185,6 +187,9 @@ export function LoginForm({
               handleLogin
             }
           >
+
+            <CampusEmailNotice />
+
             <div className="flex flex-col gap-6">
 
               <div className="grid gap-2">

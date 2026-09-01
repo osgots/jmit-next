@@ -1,4 +1,6 @@
-﻿"use client";
+"use client";
+
+import CampusEmailNotice from "@/components/campus-email-notice";
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -163,6 +165,9 @@ export function SignUpForm({
               handleSignUp
             }
           >
+
+            <CampusEmailNotice />
+
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label
