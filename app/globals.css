@@ -66,3 +66,162 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* =========================================================
+   JMIT NEXT — READABLE FORM CONTROLS
+   ========================================================= */
+
+input:not([type="button"]):not([type="submit"]),
+textarea,
+select {
+  color: #0f172a;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+select option {
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.jmit-imported-content {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.jmit-imported-content table {
+  min-width: max-content;
+}
+
+.jmit-imported-content img,
+.jmit-imported-content video,
+.jmit-imported-content iframe {
+  max-width: 100%;
+}
+
+/* ============================================================
+   JMIT NEXT GLOBAL LIGHT / DARK MODE
+   ============================================================ */
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+/* LIGHT FORM READABILITY */
+
+html:not(.dark) input:not([type="button"]):not([type="submit"]),
+html:not(.dark) textarea,
+html:not(.dark) select {
+  color: #0f172a;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+
+/* DARK GLOBAL SURFACES */
+
+.dark body {
+  background: #020617;
+  color: #f8fafc;
+}
+
+.dark .bg-white {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-slate-50 {
+  background-color: #020617 !important;
+}
+
+.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+
+.dark .bg-slate-200 {
+  background-color: #334155 !important;
+}
+
+.dark .text-slate-950,
+.dark .text-slate-900,
+.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-700,
+.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+.dark input:not([type="button"]):not([type="submit"]),
+.dark textarea,
+.dark select {
+  border-color: #475569;
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b;
+}
+
+.dark select option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.dark article,
+.dark section {
+  --tw-ring-color: rgb(51 65 85 / 0.4);
+}
+
+/* Imported original-site content */
+
+.jmit-imported-content {
+  overflow-wrap: anywhere;
+}
+
+.jmit-imported-content img,
+.jmit-imported-content video,
+.jmit-imported-content iframe {
+  max-width: 100%;
+}
+
+.dark .jmit-imported-content {
+  color: #e2e8f0;
+}
+
+.dark .jmit-imported-content table,
+.dark .jmit-imported-content td,
+.dark .jmit-imported-content th {
+  border-color: #475569 !important;
+  color: #e2e8f0 !important;
+}

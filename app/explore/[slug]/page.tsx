@@ -135,7 +135,7 @@ export default async function ImportedPage({
       <section className="px-5 py-10 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_260px]">
 
-          <article className="overflow-hidden rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-9">
+          <article className="min-w-0 overflow-x-auto rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6 md:p-9">
             <div
               className="
                 jmit-imported-content
@@ -177,9 +177,10 @@ export default async function ImportedPage({
                 [&_li]:my-2
 
                 [&_table]:my-7
-                [&_table]:w-full
+                [&_table]:min-w-max
+                [&_table]:max-w-none
                 [&_table]:border-collapse
-                [&_table]:overflow-hidden
+                [&_table]:text-sm
 
                 [&_td]:border
                 [&_td]:border-slate-200

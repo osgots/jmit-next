@@ -8,6 +8,7 @@ const defaultUrl = process.env.VERCEL_URL
   : "http://localhost:3000";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(defaultUrl),
   title: {
     default: "JMIT Next | Modern College Information Portal",
     template: "%s | JMIT Next",

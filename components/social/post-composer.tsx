@@ -69,6 +69,7 @@ const ACCEPTED_TYPES = [
   "image/gif",
   "video/mp4",
   "video/webm",
+  "video/quicktime",
 ];
 
 
@@ -210,7 +211,7 @@ export default function PostComposer({
       )
     ) {
       setError(
-        "Unsupported format. Use JPG, PNG, WEBP, GIF, MP4 or WEBM.",
+        "Unsupported format. Use JPG, PNG, WEBP, GIF, MP4, WEBM or MOV.",
       );
 
       return;
@@ -831,9 +832,17 @@ export default function PostComposer({
                 </span>
               </div>
 
-              <span className="mt-5 rounded-xl bg-white px-5 py-2.5 text-sm font-black text-slate-900">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  inputRef.current?.click();
+                }}
+                className="mt-5 rounded-xl bg-white px-5 py-2.5 text-sm font-black text-slate-900 shadow-lg active:scale-95"
+              >
                 Select From Device
-              </span>
+              </button>
             </label>
           )}
 
@@ -843,7 +852,7 @@ export default function PostComposer({
               inputRef
             }
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
+            accept="image/*,video/*"
             onChange={(
               event,
             ) =>

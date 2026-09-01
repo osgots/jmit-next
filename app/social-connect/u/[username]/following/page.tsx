@@ -307,7 +307,7 @@ export default async function FollowingPage({
 
                       <div className="flex items-center gap-1">
 
-                        <p className="truncate font-black">
+                        <p className="truncate font-black text-slate-950">
                           {
                             person.display_name
                           }

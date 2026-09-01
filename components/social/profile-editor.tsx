@@ -8,10 +8,12 @@ import {
   ShieldCheck,
   UserRound,
   Users,
+  X,
 } from "lucide-react";
 
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -36,7 +38,52 @@ type InitialProfile = {
   bio: string | null;
   avatar_url: string | null;
   account_type: AccountType;
+
+  roll_number?: string | null;
+  department?: string | null;
+  semester?: number | null;
+  profile_completed?: boolean | null;
 };
+
+
+const departments = [
+  "Computer Science & Engineering",
+  "Information Technology",
+  "Electrical & Computer Engineering",
+  "Mechanical Engineering",
+  "Electronics & Communication Engineering",
+  "Civil Engineering",
+  "BCA",
+  "BBA",
+  "MBA",
+  "MCA",
+  "Other",
+];
+
+
+function cleanUsername(
+  raw: string,
+) {
+  return raw
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[^a-z0-9._]/g, "")
+    .slice(0, 30);
+}
+
+
+function usernameFormatValid(
+  value: string,
+) {
+  return (
+    value.length >= 3 &&
+    value.length <= 30 &&
+    /^[a-z0-9_][a-z0-9._]*[a-z0-9_]$/.test(
+      value,
+    ) &&
+    !value.includes("..")
+  );
+}
 
 
 export default function ProfileEditor({
@@ -56,18 +103,47 @@ export default function ProfileEditor({
   const supabase =
     createClient();
 
+  const fileRef =
+    useRef<HTMLInputElement>(
+      null,
+    );
+
+  const initialType: AccountType =
+    isAdmin
+      ? "admin"
+      : initialProfile?.account_type ===
+          "visitor"
+        ? "visitor"
+        : "student";
+
   const [
     accountType,
     setAccountType,
   ] =
     useState<AccountType>(
-      isAdmin
-        ? "admin"
-        : initialProfile?.account_type ===
-            "visitor"
-          ? "visitor"
-          : "student",
+      initialType,
     );
+
+  const [
+    username,
+    setUsername,
+  ] =
+    useState(
+      initialProfile?.username ??
+        "",
+    );
+
+  const [
+    availability,
+    setAvailability,
+  ] =
+    useState<
+      | "idle"
+      | "checking"
+      | "available"
+      | "taken"
+      | "invalid"
+    >("idle");
 
   const [
     previewUrl,
@@ -113,13 +189,96 @@ export default function ProfileEditor({
       objectUrl,
     );
 
-    return () => {
+    return () =>
       URL.revokeObjectURL(
         objectUrl,
       );
-    };
+  }, [selectedAvatar]);
+
+
+  useEffect(() => {
+    if (!username) {
+      setAvailability(
+        "idle",
+      );
+
+      return;
+    }
+
+    if (
+      !usernameFormatValid(
+        username,
+      )
+    ) {
+      setAvailability(
+        "invalid",
+      );
+
+      return;
+    }
+
+    if (
+      mode === "edit" &&
+      username ===
+        initialProfile?.username
+    ) {
+      setAvailability(
+        "available",
+      );
+
+      return;
+    }
+
+    setAvailability(
+      "checking",
+    );
+
+    const timer =
+      window.setTimeout(
+        async () => {
+          const {
+            data,
+            error:
+              rpcError,
+          } =
+            await supabase.rpc(
+              "social_username_available",
+              {
+                p_username:
+                  username,
+              },
+            );
+
+          if (rpcError) {
+            console.error(
+              rpcError,
+            );
+
+            setAvailability(
+              "idle",
+            );
+
+            return;
+          }
+
+          setAvailability(
+            data
+              ? "available"
+              : "taken",
+          );
+        },
+        450,
+      );
+
+    return () =>
+      window.clearTimeout(
+        timer,
+      );
   }, [
-    selectedAvatar,
+    username,
+    mode,
+    initialProfile?.username,
+    supabase,
   ]);
 
 
@@ -175,19 +334,37 @@ export default function ProfileEditor({
     setBusy(true);
     setError("");
 
+    if (
+      !usernameFormatValid(
+        username,
+      )
+    ) {
+      setError(
+        "Username must be 3–30 lowercase characters. Use letters, numbers, . or _. A period cannot be first, last or repeated.",
+      );
+
+      setBusy(false);
+
+      return;
+    }
+
+    if (
+      availability ===
+        "taken"
+    ) {
+      setError(
+        "That username is already taken.",
+      );
+
+      setBusy(false);
+
+      return;
+    }
+
     const form =
       new FormData(
         event.currentTarget,
       );
-
-    const username =
-      String(
-        form.get(
-          "username",
-        ) ?? "",
-      )
-        .trim()
-        .toLowerCase();
 
     const displayName =
       String(
@@ -202,21 +379,33 @@ export default function ProfileEditor({
           "",
       ).trim();
 
+    const rollNumber =
+      String(
+        form.get(
+          "roll_number",
+        ) ?? "",
+      ).trim();
 
-    if (
-      !/^[a-zA-Z0-9_.]{3,30}$/.test(
-        username,
-      )
-    ) {
-      setError(
-        "Username must be 3–30 characters and can contain letters, numbers, _ and . only.",
+    const department =
+      String(
+        form.get(
+          "department",
+        ) ?? "",
+      ).trim();
+
+    const semesterText =
+      String(
+        form.get(
+          "semester",
+        ) ?? "",
       );
 
-      setBusy(false);
-
-      return;
-    }
-
+    const semester =
+      semesterText
+        ? Number(
+            semesterText,
+          )
+        : null;
 
     if (!displayName) {
       setError(
@@ -228,7 +417,6 @@ export default function ProfileEditor({
       return;
     }
 
-
     const finalType:
       AccountType =
       isAdmin
@@ -238,16 +426,43 @@ export default function ProfileEditor({
           ? initialProfile.account_type
           : accountType;
 
+    if (
+      finalType ===
+      "student"
+    ) {
+      if (
+        !rollNumber ||
+        !department ||
+        !semester ||
+        semester < 1 ||
+        semester > 8
+      ) {
+        setError(
+          "Student accounts must provide Roll Number, Department and Semester.",
+        );
+
+        setBusy(false);
+
+        return;
+      }
+    }
 
     let avatarUrl =
       initialProfile?.avatar_url ??
       null;
 
-
+    /*
+     * Visitor accounts cannot upload
+     * Social Connect media.
+     */
     if (
       selectedAvatar &&
-      finalType !==
-        "visitor"
+      (
+        finalType ===
+          "student" ||
+        finalType ===
+          "admin"
+      )
     ) {
       const extension =
         selectedAvatar.name
@@ -273,12 +488,10 @@ export default function ProfileEditor({
             {
               cacheControl:
                 "3600",
-
               upsert:
                 false,
             },
           );
-
 
       if (uploadError) {
         setError(
@@ -289,7 +502,6 @@ export default function ProfileEditor({
 
         return;
       }
-
 
       const {
         data:
@@ -303,11 +515,20 @@ export default function ProfileEditor({
             storagePath,
           );
 
-
       avatarUrl =
         publicData.publicUrl;
     }
 
+    const profileCompleted =
+      finalType !==
+        "student" ||
+      Boolean(
+        rollNumber &&
+          department &&
+          semester &&
+          semester >= 1 &&
+          semester <= 8,
+      );
 
     const {
       error:
@@ -339,8 +560,26 @@ export default function ProfileEditor({
             account_type:
               finalType,
 
+            roll_number:
+              finalType ===
+              "student"
+                ? rollNumber
+                : null,
+
             department:
-              null,
+              finalType ===
+              "student"
+                ? department
+                : null,
+
+            semester:
+              finalType ===
+              "student"
+                ? semester
+                : null,
+
+            profile_completed:
+              profileCompleted,
 
             course:
               null,
@@ -355,19 +594,33 @@ export default function ProfileEditor({
           },
         );
 
+    if (profileError) {
+      if (
+        profileError.code ===
+          "23505" ||
+        profileError.message
+          .toLowerCase()
+          .includes(
+            "duplicate",
+          )
+      ) {
+        setError(
+          "That username is already taken. Choose another username.",
+        );
 
-    if (
-      profileError
-    ) {
-      setError(
-        profileError.message,
-      );
+        setAvailability(
+          "taken",
+        );
+      } else {
+        setError(
+          profileError.message,
+        );
+      }
 
       setBusy(false);
 
       return;
     }
-
 
     router.push(
       `/social-connect/u/${username}`,
@@ -379,6 +632,15 @@ export default function ProfileEditor({
 
   const isEdit =
     mode === "edit";
+
+  const studentSelected =
+    !isAdmin &&
+    accountType ===
+      "student";
+
+  const canUploadSocialAvatar =
+    isAdmin ||
+    studentSelected;
 
 
   return (
@@ -396,13 +658,10 @@ export default function ProfileEditor({
         </div>
       )}
 
-
-      {/* ACCOUNT TYPE */}
-
       {isAdmin ? (
-        <div className="overflow-hidden rounded-[22px] border border-violet-200 bg-gradient-to-br from-violet-50 via-fuchsia-50 to-indigo-50 p-5">
+        <div className="rounded-[22px] border border-violet-200 bg-gradient-to-br from-violet-50 via-fuchsia-50 to-indigo-50 p-5">
           <div className="flex gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 via-fuchsia-500 to-indigo-600 text-white shadow-lg shadow-violet-200">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 via-fuchsia-500 to-indigo-600 text-white">
               <ShieldCheck
                 size={20}
               />
@@ -410,28 +669,12 @@ export default function ProfileEditor({
 
             <div>
               <p className="font-black text-violet-950">
-                Administrator
-                Profile
+                Administrator Profile
               </p>
 
               <p className="mt-1 text-sm leading-6 text-violet-700">
-                Administrator
-                privileges are
-                already authenticated.
-                No department,
-                course or college ID
-                information is
-                required.
+                Administrator identity is provided by your JMIT Next account role.
               </p>
-
-              <span className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-violet-700 shadow-sm">
-                <Check
-                  size={14}
-                />
-
-                Gradient Violet
-                Verification
-              </span>
             </div>
           </div>
         </div>
@@ -449,11 +692,11 @@ export default function ProfileEditor({
                   "student",
                 )
               }
-              className={`rounded-[20px] border p-5 text-left transition ${
+              className={`rounded-[20px] border p-5 text-left ${
                 accountType ===
                 "student"
                   ? "border-amber-400 bg-amber-50 ring-2 ring-amber-100"
-                  : "border-slate-200 bg-white hover:border-slate-300"
+                  : "border-slate-200 bg-white"
               }`}
             >
               <GraduationCap
@@ -466,9 +709,7 @@ export default function ProfileEditor({
               </p>
 
               <p className="mt-1 text-xs leading-5 text-slate-600">
-                Share posts and
-                receive the yellow
-                student badge.
+                Share posts and receive a yellow student identity dot. Blue verification requires separate admin review.
               </p>
             </button>
 
@@ -479,11 +720,11 @@ export default function ProfileEditor({
                   "visitor",
                 )
               }
-              className={`rounded-[20px] border p-5 text-left transition ${
+              className={`rounded-[20px] border p-5 text-left ${
                 accountType ===
                 "visitor"
                   ? "border-slate-500 bg-slate-100 ring-2 ring-slate-100"
-                  : "border-slate-200 bg-white hover:border-slate-300"
+                  : "border-slate-200 bg-white"
               }`}
             >
               <Users
@@ -492,13 +733,11 @@ export default function ProfileEditor({
               />
 
               <p className="mt-3 font-black text-slate-950">
-                Visitor
+                Visitor / Other
               </p>
 
               <p className="mt-1 text-xs leading-5 text-slate-600">
-                Browse, follow,
-                like and comment.
-                No post uploads.
+                Browse, search, like, save, comment, follow and chat. Social media uploads are disabled.
               </p>
             </button>
           </div>
@@ -506,11 +745,7 @@ export default function ProfileEditor({
       ) : null}
 
 
-      {/* AVATAR + PREVIEW */}
-
-      {(isAdmin ||
-        accountType ===
-          "student") && (
+      {canUploadSocialAvatar && (
         <div>
           <label className="mb-3 block text-xs font-black uppercase tracking-[0.16em] text-slate-600">
             Profile Picture
@@ -520,14 +755,12 @@ export default function ProfileEditor({
             <div className="relative">
               {previewUrl ? (
                 <img
-                  src={
-                    previewUrl
-                  }
+                  src={previewUrl}
                   alt="Profile preview"
                   className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-lg"
                 />
               ) : (
-                <div className="flex h-28 w-28 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-blue-100 to-cyan-50 text-blue-700 shadow-lg">
+                <div className="flex h-28 w-28 items-center justify-center rounded-full border-4 border-white bg-blue-50 text-blue-700 shadow-lg">
                   <UserRound
                     size={40}
                   />
@@ -553,19 +786,16 @@ export default function ProfileEditor({
               </p>
 
               <p className="mt-1 text-sm text-slate-600">
-                JPG, PNG or WEBP.
-                Maximum 5 MB.
+                JPG, PNG or WEBP. Maximum 5 MB.
               </p>
 
-              {selectedAvatar && (
-                <p className="mt-2 max-w-xs truncate text-xs font-semibold text-emerald-700">
-                  {
-                    selectedAvatar.name
-                  }
-                </p>
-              )}
-
-              <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#071f50] px-4 py-2.5 text-sm font-black text-white transition hover:bg-blue-900">
+              <button
+                type="button"
+                onClick={() =>
+                  fileRef.current?.click()
+                }
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#071f50] px-4 py-2.5 text-sm font-black text-white"
+              >
                 <Camera
                   size={16}
                 />
@@ -573,30 +803,26 @@ export default function ProfileEditor({
                 {previewUrl
                   ? "Change Photo"
                   : "Upload Photo"}
+              </button>
 
-                <input
-                  type="file"
-                  name="avatar"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(
-                    event,
-                  ) =>
-                    selectAvatar(
-                      event
-                        .target
-                        .files?.[0],
-                    )
-                  }
-                  className="hidden"
-                />
-              </label>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(
+                  event,
+                ) =>
+                  selectAvatar(
+                    event.target.files?.[0],
+                  )
+                }
+                className="hidden"
+              />
             </div>
           </div>
         </div>
       )}
 
-
-      {/* COMMON FIELDS */}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
@@ -611,11 +837,11 @@ export default function ProfileEditor({
               initialProfile?.display_name ??
               ""
             }
-            autoComplete="name"
             placeholder="Your display name"
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-[15px] font-semibold text-slate-950 caret-blue-600 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-[15px] font-semibold text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
           />
         </div>
+
 
         <div>
           <label className="mb-2 block text-xs font-black uppercase tracking-[0.13em] text-slate-600">
@@ -623,28 +849,192 @@ export default function ProfileEditor({
           </label>
 
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">
+            <span className="absolute left-4 top-[17px] font-bold text-slate-400">
               @
             </span>
 
             <input
               name="username"
               required
-              defaultValue={
-                initialProfile?.username ??
-                ""
+              value={username}
+              onChange={(
+                event,
+              ) =>
+                setUsername(
+                  cleanUsername(
+                    event.target.value,
+                  ),
+                )
               }
               autoCapitalize="none"
               autoCorrect="off"
+              spellCheck={false}
               placeholder="username"
-              className="w-full rounded-xl border border-slate-300 bg-white py-3.5 pl-9 pr-4 text-[15px] font-semibold text-slate-950 caret-blue-600 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-xl border border-slate-300 bg-white py-3.5 pl-9 pr-4 text-[15px] font-semibold lowercase text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             />
+          </div>
+
+          <div className="mt-2 min-h-5 text-xs font-semibold">
+            {availability ===
+              "checking" && (
+              <span className="text-slate-500">
+                Checking availability...
+              </span>
+            )}
+
+            {availability ===
+              "available" && (
+              <span className="text-emerald-600">
+                ✓ Username available
+              </span>
+            )}
+
+            {availability ===
+              "taken" && (
+              <span className="text-red-600">
+                <X
+                  size={12}
+                  className="mr-1 inline"
+                />
+                Username already taken
+              </span>
+            )}
+
+            {availability ===
+              "invalid" && (
+              <span className="text-amber-700">
+                3–30 lowercase letters, numbers, . and _ only.
+              </span>
+            )}
           </div>
         </div>
       </div>
 
+
+      {studentSelected && (
+        <div className="rounded-[22px] border border-amber-200 bg-amber-50/60 p-5">
+          <div className="mb-5">
+            <p className="font-black text-slate-950">
+              Student Details
+            </p>
+
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              These details are required for Student accounts.
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            <div>
+              <label className="mb-2 block text-xs font-black uppercase tracking-[0.13em] text-slate-600">
+                Roll Number
+              </label>
+
+              <input
+                name="roll_number"
+                required
+                defaultValue={
+                  initialProfile?.roll_number ??
+                  ""
+                }
+                placeholder="Enter university/college roll number"
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-black uppercase tracking-[0.13em] text-slate-600">
+                Department
+              </label>
+
+              <select
+                name="department"
+                required
+                defaultValue={
+                  initialProfile?.department ??
+                  ""
+                }
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-slate-950 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              >
+                <option value="">
+                  Select department
+                </option>
+
+                {departments.map(
+                  (
+                    department,
+                  ) => (
+                    <option
+                      key={
+                        department
+                      }
+                      value={
+                        department
+                      }
+                    >
+                      {
+                        department
+                      }
+                    </option>
+                  ),
+                )}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-black uppercase tracking-[0.13em] text-slate-600">
+                Semester
+              </label>
+
+              <select
+                name="semester"
+                required
+                defaultValue={
+                  initialProfile?.semester?.toString() ??
+                  ""
+                }
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-slate-950 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              >
+                <option value="">
+                  Select semester
+                </option>
+
+                {Array.from(
+                  {
+                    length: 8,
+                  },
+                  (
+                    _,
+                    index,
+                  ) =>
+                    index + 1,
+                ).map(
+                  (
+                    semester,
+                  ) => (
+                    <option
+                      key={
+                        semester
+                      }
+                      value={
+                        semester
+                      }
+                    >
+                      Semester{" "}
+                      {
+                        semester
+                      }
+                    </option>
+                  ),
+                )}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       <div>
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between gap-4">
           <label className="text-xs font-black uppercase tracking-[0.13em] text-slate-600">
             Bio
           </label>
@@ -663,11 +1053,7 @@ export default function ProfileEditor({
             ""
           }
           placeholder="Tell people something about yourself..."
-          className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-[15px] leading-7 text-slate-950 caret-blue-600 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-          style={{
-            colorScheme:
-              "light",
-          }}
+          className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-[15px] leading-7 text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
         />
       </div>
 
@@ -675,21 +1061,23 @@ export default function ProfileEditor({
       {!isAdmin &&
         accountType ===
           "visitor" && (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
-          Visitor profiles can
-          interact with community
-          posts but cannot upload
-          photos/videos or create
-          posts.
-        </div>
-      )}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+            Visitor accounts can browse, search, like, save, comment, follow and chat, but cannot upload Social Connect photos/videos or create posts.
+          </div>
+        )}
 
 
       <button
         disabled={
-          busy
+          busy ||
+          availability ===
+            "taken" ||
+          availability ===
+            "invalid" ||
+          availability ===
+            "checking"
         }
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#08255b] to-blue-700 px-5 py-4 text-[15px] font-black text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#08255b] to-blue-700 px-5 py-4 text-[15px] font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         {busy ? (
           <Loader2

@@ -16,13 +16,11 @@ export async function requireSocialUser() {
   } =
     await supabase.auth.getUser();
 
-
   if (!user) {
     redirect(
       "/auth/login",
     );
   }
-
 
   return {
     supabase,
@@ -38,7 +36,6 @@ export async function requireSocialProfile() {
   } =
     await requireSocialUser();
 
-
   const {
     data: profile,
   } =
@@ -53,13 +50,11 @@ export async function requireSocialProfile() {
       )
       .maybeSingle();
 
-
   if (!profile) {
     redirect(
       "/social-connect/onboarding",
     );
   }
-
 
   const {
     data: control,
@@ -68,15 +63,12 @@ export async function requireSocialProfile() {
       .from(
         "social_account_controls",
       )
-      .select(
-        "status",
-      )
+      .select("status")
       .eq(
         "user_id",
         user.id,
       )
       .maybeSingle();
-
 
   if (
     control &&
@@ -87,24 +79,6 @@ export async function requireSocialProfile() {
       "/social-connect?error=account-restricted",
     );
   }
-
-
-  return {
-    supabase,
-    user,
-    profile,
-  };
-}
-
-
-export async function requireSocialPoster() {
-  const {
-    supabase,
-    user,
-    profile,
-  } =
-    await requireSocialProfile();
-
 
   const {
     data:
@@ -119,11 +93,38 @@ export async function requireSocialPoster() {
       )
       .maybeSingle();
 
-
   const isAdmin =
     appProfile?.role ===
     "admin";
 
+  if (
+    !isAdmin &&
+    profile.account_type ===
+      "student" &&
+    !profile.profile_completed
+  ) {
+    redirect(
+      "/social-connect/settings?complete=1",
+    );
+  }
+
+  return {
+    supabase,
+    user,
+    profile,
+    isAdmin,
+  };
+}
+
+
+export async function requireSocialPoster() {
+  const {
+    supabase,
+    user,
+    profile,
+    isAdmin,
+  } =
+    await requireSocialProfile();
 
   if (
     !isAdmin &&
@@ -134,7 +135,6 @@ export async function requireSocialPoster() {
       "/social-connect?error=posting-not-allowed",
     );
   }
-
 
   return {
     supabase,

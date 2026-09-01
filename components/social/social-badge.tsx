@@ -10,37 +10,59 @@ export default function SocialBadge({
   kind: SocialBadgeKind;
   size?: number;
 }) {
+  /*
+   * Normal students are NOT verified.
+   * They receive a simple yellow identity dot.
+   */
+  if (kind === "student") {
+    return (
+      <span
+        title="Student account"
+        aria-label="Student account"
+        className="inline-flex shrink-0 items-center justify-center"
+        style={{
+          width: size,
+          height: size,
+        }}
+      >
+        <span
+          className="block rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-500 shadow-[0_0_6px_rgba(245,158,11,.35)]"
+          style={{
+            width: Math.max(8, Math.round(size * 0.55)),
+            height: Math.max(8, Math.round(size * 0.55)),
+          }}
+        />
+      </span>
+    );
+  }
+
   const id =
-    `badge-${kind}`;
+    `badge-${kind}-${Math.random()
+      .toString(36)
+      .slice(2)}`;
+
+  const isAdmin =
+    kind === "admin";
 
   const title =
-    kind === "admin"
+    isAdmin
       ? "JMIT Next Administrator"
-      : kind === "blue"
-        ? "Admin Verified Student"
-        : "Student Account";
+      : "Admin Verified Student";
 
   const gradient =
-    kind === "admin"
+    isAdmin
       ? [
           "#6d28d9",
           "#a855f7",
           "#ec4899",
           "#6366f1",
         ]
-      : kind === "blue"
-        ? [
-            "#0284c7",
-            "#2563eb",
-            "#06b6d4",
-            "#3b82f6",
-          ]
-        : [
-            "#facc15",
-            "#f59e0b",
-            "#fbbf24",
-            "#eab308",
-          ];
+      : [
+          "#0284c7",
+          "#2563eb",
+          "#06b6d4",
+          "#3b82f6",
+        ];
 
   return (
     <span
@@ -54,7 +76,7 @@ export default function SocialBadge({
         viewBox="0 0 24 24"
         aria-hidden="true"
         className={
-          kind === "admin"
+          isAdmin
             ? "drop-shadow-[0_0_5px_rgba(168,85,247,.55)]"
             : ""
         }
@@ -67,33 +89,10 @@ export default function SocialBadge({
             x2="24"
             y2="24"
           >
-            <stop
-              offset="0%"
-              stopColor={
-                gradient[0]
-              }
-            />
-
-            <stop
-              offset="35%"
-              stopColor={
-                gradient[1]
-              }
-            />
-
-            <stop
-              offset="70%"
-              stopColor={
-                gradient[2]
-              }
-            />
-
-            <stop
-              offset="100%"
-              stopColor={
-                gradient[3]
-              }
-            />
+            <stop offset="0%" stopColor={gradient[0]} />
+            <stop offset="35%" stopColor={gradient[1]} />
+            <stop offset="70%" stopColor={gradient[2]} />
+            <stop offset="100%" stopColor={gradient[3]} />
           </linearGradient>
         </defs>
 
