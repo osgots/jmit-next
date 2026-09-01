@@ -225,3 +225,42 @@ html:not(.dark) textarea::placeholder {
   border-color: #475569 !important;
   color: #e2e8f0 !important;
 }
+
+
+/* ============================================================
+   JMIT NEXT V12 DARK CONTRAST
+   Fix custom arbitrary Tailwind colors in dark mode.
+   ============================================================ */
+
+.dark [class*="text-[#071a3d]"],
+.dark [class*="text-[#071f50]"],
+.dark [class*="text-[#061b42]"],
+.dark [class*="text-[#08255b]"] {
+  color: #f8fafc !important;
+}
+
+.dark [class*="bg-[#f5f7fb]"] {
+  background-color: #020617 !important;
+}
+
+.dark [class*="bg-white/95"],
+.dark [class*="bg-white/90"] {
+  background-color: rgb(15 23 42 / 0.96) !important;
+}
+
+.dark [class*="shadow-slate-200"] {
+  --tw-shadow-color: transparent !important;
+}
+
+.dark .text-blue-950 {
+  color: #dbeafe !important;
+}
+
+.dark .text-violet-950 {
+  color: #ede9fe !important;
+}
+
+.dark .text-amber-950 {
+  color: #fef3c7 !important;
+}
+

@@ -270,19 +270,6 @@ export default async function SocialProfilePage({
             }`}
           >
             <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.22),transparent_55%)]" />
-
-            {isOwnProfile && (
-              <Link
-                href="/social-connect/settings"
-                className="absolute bottom-4 right-4 flex items-center gap-2 rounded-xl bg-white/95 px-4 py-2.5 text-xs font-black text-slate-800 shadow-lg backdrop-blur"
-              >
-                <Camera
-                  size={14}
-                />
-
-                Edit Profile
-              </Link>
-            )}
           </div>
 
 
