@@ -114,91 +114,96 @@ export default async function SocialProfilePage({
       "admin";
 
 
-  const {
-    data: blue,
-  } =
-    !isAdmin
-      ? await supabase
-          .from(
-            "social_blue_verifications",
-          )
-          .select(
-            "verified_roll_number, approved_at",
-          )
-          .eq(
-            "user_id",
-            profile.user_id,
-          )
-          .maybeSingle()
-      : {
-          data: null,
-        };
+  const blue =
+    !isAdmin &&
+    publicIdentity?.is_blue_verified
+      ? {
+          verified_roll_number:
+            publicIdentity.verified_roll_number,
+
+          approved_at:
+            publicIdentity.approved_at,
+        }
+      : null;
 
 
-  const {
-    data: posts,
-  } =
-    await supabase
-      .from(
-        "social_posts",
-      )
-      .select("*")
-      .eq(
-        "user_id",
-        profile.user_id,
-      )
-      .eq(
-        "status",
-        "active",
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false,
-        },
-      );
+  const [
+    postsResult,
+    followersResult,
+    followingResult,
+  ] =
+    await Promise.all([
+
+      supabase
+        .from(
+          "social_posts",
+        )
+        .select("*")
+        .eq(
+          "user_id",
+          profile.user_id,
+        )
+        .eq(
+          "status",
+          "active",
+        )
+        .order(
+          "created_at",
+          {
+            ascending:
+              false,
+          },
+        ),
 
 
-  const {
-    count:
-      followers,
-  } =
-    await supabase
-      .from(
-        "social_follows",
-      )
-      .select("*", {
-        count:
-          "exact",
+      supabase
+        .from(
+          "social_follows",
+        )
+        .select("*", {
+          count:
+            "exact",
 
-        head:
-          true,
-      })
-      .eq(
-        "following_id",
-        profile.user_id,
-      );
+          head:
+            true,
+        })
+        .eq(
+          "following_id",
+          profile.user_id,
+        ),
 
 
-  const {
-    count:
-      following,
-  } =
-    await supabase
-      .from(
-        "social_follows",
-      )
-      .select("*", {
-        count:
-          "exact",
+      supabase
+        .from(
+          "social_follows",
+        )
+        .select("*", {
+          count:
+            "exact",
 
-        head:
-          true,
-      })
-      .eq(
-        "follower_id",
-        profile.user_id,
-      );
+          head:
+            true,
+        })
+        .eq(
+          "follower_id",
+          profile.user_id,
+        ),
+    ]);
+
+
+  const posts =
+    postsResult.data ??
+    [];
+
+
+  const followers =
+    followersResult.count ??
+    0;
+
+
+  const following =
+    followingResult.count ??
+    0;
 
 
   const isOwnProfile =
@@ -509,7 +514,7 @@ export default async function SocialProfilePage({
 
             <div className="mt-7 flex border-y border-slate-100 py-4">
               <div className="flex-1 text-center sm:flex-none sm:px-7">
-                <p className="text-xl font-black text-[#071a3d]">
+                <p className="text-xl font-black text-[#071a3d] dark:text-white">
                   {posts?.length ??
                     0}
                 </p>
@@ -521,9 +526,9 @@ export default async function SocialProfilePage({
 
               <Link
                 href={`/social-connect/u/${profile.username}/followers`}
-                className="flex-1 border-x border-slate-100 text-center transition hover:bg-slate-50 sm:flex-none sm:px-7"
+                className="flex-1 border-x border-slate-100 text-center transition hover:bg-slate-50 dark:hover:bg-slate-800 sm:flex-none sm:px-7"
               >
-                <p className="text-xl font-black text-[#071a3d]">
+                <p className="text-xl font-black text-[#071a3d] dark:text-white">
                   {followers ?? 0}
                 </p>
 
@@ -534,9 +539,9 @@ export default async function SocialProfilePage({
 
               <Link
                 href={`/social-connect/u/${profile.username}/following`}
-                className="flex-1 text-center transition hover:bg-slate-50 sm:flex-none sm:px-7"
+                className="flex-1 text-center transition hover:bg-slate-50 dark:hover:bg-slate-800 sm:flex-none sm:px-7"
               >
-                <p className="text-xl font-black text-[#071a3d]">
+                <p className="text-xl font-black text-[#071a3d] dark:text-white">
                   {following ?? 0}
                 </p>
 
@@ -553,7 +558,7 @@ export default async function SocialProfilePage({
               blue) && (
               <div className="mt-6 max-w-2xl">
                 {profile.bio && (
-                  <p className="whitespace-pre-wrap text-[15px] leading-7 text-slate-700">
+                  <p className="whitespace-pre-wrap text-[15px] leading-7 text-slate-700 dark:text-slate-300">
                     {
                       profile.bio
                     }
@@ -588,7 +593,7 @@ export default async function SocialProfilePage({
 
         {/* INSTAGRAM-LIKE POSTS */}
 
-        <section className="mt-6 bg-white sm:rounded-[28px] sm:border sm:border-slate-200">
+        <section className="mt-6 bg-white sm:rounded-[28px] sm:border sm:border-slate-200 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
 
             <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[#071a3d] dark:text-white">
@@ -624,7 +629,7 @@ export default async function SocialProfilePage({
                 />
               </div>
 
-              <h2 className="mt-5 text-xl font-black text-[#071a3d]">
+              <h2 className="mt-5 text-xl font-black text-[#071a3d] dark:text-white">
                 No posts yet
               </h2>
 

@@ -5,6 +5,7 @@ import {
 import Link from "next/link";
 
 import ProfileEditor from "@/components/social/profile-editor";
+import RollVisibilityToggle from "@/components/social/roll-visibility-toggle";
 import SiteHeader from "@/components/site-header";
 import { createClient } from "@/lib/supabase/server";
 
@@ -32,7 +33,7 @@ export default async function SocialSettingsPage() {
         "social_profiles",
       )
       .select(
-        "username, display_name, bio, avatar_url, account_type, roll_number, department, semester, profile_completed",
+        "username, display_name, bio, avatar_url, account_type, roll_number, department, semester, profile_completed, show_verified_roll_number",
       )
       .eq(
         "user_id",
@@ -63,6 +64,29 @@ export default async function SocialSettingsPage() {
     appProfile?.role ===
     "admin";
 
+
+  const {
+    data:
+      verification,
+  } =
+    !isAdmin
+      ? await supabase
+          .from(
+            "social_blue_verifications",
+          )
+          .select(
+            "verified_roll_number",
+          )
+          .eq(
+            "user_id",
+            user.id,
+          )
+          .maybeSingle()
+      : {
+          data:
+            null,
+        };
+
   const accountType =
     isAdmin
       ? "admin"
@@ -78,7 +102,7 @@ export default async function SocialSettingsPage() {
     !profile.profile_completed;
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb]">
+    <main className="min-h-screen bg-[#f5f7fb] dark:bg-slate-950">
       <SiteHeader />
 
       <div className="mx-auto max-w-2xl px-5 py-12">
@@ -100,12 +124,12 @@ export default async function SocialSettingsPage() {
             Social Connect
           </p>
 
-          <h1 className="mt-3 text-4xl font-black tracking-[-0.045em] text-[#071a3d]">
+          <h1 className="mt-3 text-4xl font-black tracking-[-0.045em] text-[#071a3d] dark:text-white">
             Edit Profile
           </h1>
         </div>
 
-        <div className="mt-8 rounded-[30px] border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50 sm:p-8">
+        <div className="mt-8 rounded-[30px] border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-slate-900 shadow-slate-200/50 sm:p-8">
           <ProfileEditor
             userId={
               user.id
@@ -144,6 +168,22 @@ export default async function SocialSettingsPage() {
             }}
           />
         </div>
+
+
+        {verification?.verified_roll_number && (
+          <div className="mt-6">
+            <RollVisibilityToggle
+              initialVisible={
+                Boolean(
+                  profile.show_verified_roll_number,
+                )
+              }
+              rollNumber={
+                verification.verified_roll_number
+              }
+            />
+          </div>
+        )}
 
         <Link
           replace

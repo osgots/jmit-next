@@ -283,7 +283,7 @@ html:not(.dark) textarea::placeholder {
 
 
 /* ============================================================
-   JMIT NEXT V15   DARK MODE FINAL CONTRAST
+   JMIT NEXT V15 — DARK MODE FINAL CONTRAST
    ============================================================ */
 
 .dark .social-profile-surface,
