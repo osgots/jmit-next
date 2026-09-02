@@ -54,7 +54,7 @@ export default async function SocialProfilePage({
       .from(
         "social_profiles",
       )
-      .select("*")
+      .select("*, cover_url, cover_path, cover_type")
       .eq(
         "username",
         username,
@@ -295,7 +295,7 @@ export default async function SocialProfilePage({
 
         <section className="overflow-hidden border-y border-slate-200 bg-white shadow-sm sm:rounded-[30px] sm:border dark:border-slate-800 dark:bg-slate-900">
           <div
-            className={`relative h-44 sm:h-56 ${
+            className={`relative h-44 overflow-hidden sm:h-56 ${
               isAdmin
                 ? "bg-[radial-gradient(circle_at_20%_20%,rgba(236,72,153,.75),transparent_32%),radial-gradient(circle_at_80%_30%,rgba(99,102,241,.8),transparent_35%),linear-gradient(135deg,#4c1d95,#7c3aed,#c026d3)]"
                 : blue
@@ -306,7 +306,57 @@ export default async function SocialProfilePage({
                     : "bg-gradient-to-br from-slate-700 via-slate-600 to-slate-500"
             }`}
           >
-            <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.22),transparent_55%)]" />
+
+            {profile.cover_url &&
+              profile.cover_type ===
+                "video" && (
+              <video
+                src={
+                  profile.cover_url
+                }
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                aria-label={`${profile.display_name} profile cover video`}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
+
+
+            {profile.cover_url &&
+              profile.cover_type !==
+                "video" && (
+              <img
+                src={
+                  profile.cover_url
+                }
+                alt={`${profile.display_name} cover`}
+                loading="eager"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
+
+
+            <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.38),transparent_62%)]" />
+
+
+            {isOwnProfile &&
+              canPost && (
+              <Link
+                href="/social-connect/settings#cover"
+                className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border border-white/15 bg-black/55 px-3 py-2 text-xs font-black text-white shadow-lg backdrop-blur-md transition hover:bg-black/70 sm:right-4 sm:top-4"
+              >
+                <Camera
+                  size={14}
+                />
+
+                Change Cover
+              </Link>
+            )}
+
           </div>
 
 
@@ -566,23 +616,38 @@ export default async function SocialProfilePage({
                 )}
 
                 {blue && (
-                  <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700">
+                  <div className="mt-4 inline-flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 shadow-sm dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-300">
+
                     <BadgeCheck
                       size={17}
                     />
 
-                    Verified Student
-
-                    <span className="text-blue-300">
-                      •
-                    </span>
-
-                    Roll No.
                     <strong>
-                      {
-                        blue.verified_roll_number
-                      }
+                      Verified Student
                     </strong>
+
+
+                    {blue.verified_roll_number ? (
+                      <>
+                        <span
+                          aria-hidden="true"
+                          className="text-blue-300 dark:text-blue-700"
+                        >
+                          •
+                        </span>
+
+                        <span>
+                          Roll No.{" "}
+
+                          <strong>
+                            {
+                              blue.verified_roll_number
+                            }
+                          </strong>
+                        </span>
+                      </>
+                    ) : null}
+
                   </div>
                 )}
               </div>
