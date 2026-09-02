@@ -1,3 +1,4 @@
+import MentionCommentForm from "@/components/social/mention-comment-form";
 import { getPublicSocialIdentityMap, identityKind } from "@/lib/social/public-identity";
 import {
   Heart,
@@ -953,47 +954,15 @@ export default async function SocialPostPage({
                 {/* COMMENT BOX */}
 
                 {mySocialProfile ? (
-                  <form
-                    action={
-                      addComment
+                  <MentionCommentForm
+                    postId={
+                      post.id
                     }
-                    className="flex items-center gap-2 border-t border-slate-100 p-3 sm:p-4 dark:border-slate-800"
-                  >
-                    <input
-                      type="hidden"
-                      name="post_id"
-                      value={
-                        post.id
-                      }
-                    />
-
-                    <input
-                      type="hidden"
-                      name="return_to"
-                      value={
-                        pagePath
-                      }
-                    />
-
-                    <input
-                      name="body"
-                      maxLength={
-                        1000
-                      }
-                      required
-                      placeholder="Add a comment... use @username to mention"
-                      className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                    />
-
-                    <button
-                      title="Post comment"
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white"
-                    >
-                      <Send
-                        size={17}
-                      />
-                    </button>
-                  </form>
+                    returnTo={
+                      pagePath
+                    }
+                    variant="post"
+                  />
 
                 ) : (
                   <div className="border-t border-slate-100 p-4 text-center dark:border-slate-800">

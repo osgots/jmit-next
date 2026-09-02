@@ -1,5 +1,8 @@
 "use client";
 
+import MentionText from "@/components/social/mention-text";
+import MentionTextarea from "@/components/social/mention-textarea";
+
 import {
   Check,
   CheckCheck,
@@ -769,11 +772,12 @@ export default function ChatThread({
                           : "rounded-bl-md bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap break-words">
-                        {
+                      <MentionText
+                        text={
                           message.body
                         }
-                      </p>
+                        className="whitespace-pre-wrap break-words"
+                      />
                     </div>
                   )}
 
@@ -913,16 +917,12 @@ export default function ChatThread({
       >
         <div className="mx-auto flex max-w-4xl items-end gap-2">
 
-          <textarea
+          <MentionTextarea
             value={
               body
             }
-            onChange={(
-              event,
-            ) =>
-              updateTyping(
-                event.target.value,
-              )
+            onChange={
+              updateTyping
             }
             onKeyDown={(
               event,
@@ -934,8 +934,10 @@ export default function ChatThread({
               ) {
                 event.preventDefault();
 
-                event.currentTarget
-                  .form
+                const textarea =
+                  event.currentTarget;
+
+                textarea.form
                   ?.requestSubmit();
               }
             }}
@@ -943,8 +945,8 @@ export default function ChatThread({
               2000
             }
             rows={1}
-            placeholder="Message..."
-            className="max-h-32 min-h-11 min-w-0 flex-1 resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            placeholder="Message... use @username to mention"
+            className="max-h-32 min-h-11 w-full resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
           />
 
           <button

@@ -1,3 +1,7 @@
+import MentionText from "@/components/social/mention-text";
+import MentionCommentForm from "@/components/social/mention-comment-form";
+
+import StoryTray from "@/components/social/story-tray";
 import {
   Search,
   Heart,
@@ -6,7 +10,7 @@ import {
   ShieldCheck,
   UserPlus,
   Users,
-
+  Eye,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -491,6 +495,19 @@ export default async function SocialConnectPage() {
         </div>
       </section>
 
+      <StoryTray
+        currentUserId={
+          user?.id ??
+          null
+        }
+        canPost={
+          Boolean(
+            canPost,
+          )
+        }
+      />
+
+
       {user &&
         myProfile?.account_type ===
           "visitor" && (
@@ -768,7 +785,25 @@ export default async function SocialConnectPage() {
                             postComments.length
                           }
                         </div>
-                      </div>
+                                              <div
+                          className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400"
+                          title="Views"
+                        >
+                          <Eye
+                            size={22}
+                            strokeWidth={2}
+                          />
+
+                          <span className="text-sm font-black">
+                            {
+                              post.view_count ??
+                              0
+                            }
+                          </span>
+                        </div>
+
+
+</div>
 
                       {post.caption && (
                         <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700">
@@ -825,9 +860,11 @@ export default async function SocialConnectPage() {
                                 </span>
 
                                 <span>
-                                  {
-                                    comment.body
-                                  }
+                                  <MentionText
+                                    text={
+                                      comment.body
+                                    }
+                                  />
                                 </span>
                               </div>
                             );
@@ -836,34 +873,12 @@ export default async function SocialConnectPage() {
 
                       {user &&
                         myProfile && (
-                          <form
-                            action={
-                              addComment
+                          <MentionCommentForm
+                            postId={
+                              post.id
                             }
-                            className="mt-5 flex gap-2 border-t border-slate-100 pt-4"
-                          >
-                            <input
-                              type="hidden"
-                              name="post_id"
-                              value={
-                                post.id
-                              }
-                            />
-
-                            <input
-                              name="body"
-                              required
-                              maxLength={
-                                1000
-                              }
-                              placeholder="Add a comment..."
-                              className="min-w-0 flex-1 rounded-xl bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-100"
-                            />
-
-                            <button className="px-2 text-sm font-black text-blue-700">
-                              Post
-                            </button>
-                          </form>
+                            variant="feed"
+                          />
                         )}
                     </div>
                   </article>

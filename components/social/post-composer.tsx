@@ -1,4 +1,6 @@
-﻿"use client";
+"use client";
+
+import MentionTextarea from "@/components/social/mention-textarea";
 
 import {
   Check,
@@ -916,23 +918,19 @@ export default function PostComposer({
 
           <div className="flex-1 p-5">
 
-            <textarea
+            <MentionTextarea
               value={
                 caption
               }
-              onChange={(
-                event,
-              ) =>
-                setCaption(
-                  event.target.value,
-                )
+              onChange={
+                setCaption
               }
               rows={8}
               maxLength={
                 2200
               }
-              placeholder="Write a caption..."
-              className="w-full resize-none bg-transparent text-[15px] leading-7 text-slate-950 outline-none placeholder:text-slate-400"
+              placeholder="Write a caption... use @username to mention someone"
+              className="w-full resize-none bg-transparent text-[15px] leading-7 text-slate-950 outline-none placeholder:text-slate-400 dark:text-white"
             />
 
 

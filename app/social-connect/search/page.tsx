@@ -28,7 +28,14 @@ export default async function SocialSearchPage({
     await searchParams;
 
   const query =
-    params.q?.trim() ?? "";
+    String(
+      (params.q?.trim() ?? "") ?? ""
+    )
+      .trim()
+      .replace(
+        /^@+/,
+        "",
+      );
 
   const supabase =
     await createClient();

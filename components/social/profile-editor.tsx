@@ -1,4 +1,6 @@
-﻿"use client";
+"use client";
+
+import MentionTextarea from "@/components/social/mention-textarea";
 
 import {
   Camera,
@@ -132,6 +134,16 @@ export default function ProfileEditor({
       initialProfile?.username ??
         "",
     );
+
+  const [
+    bio,
+    setBio,
+  ] =
+    useState(
+      initialProfile?.bio ??
+        "",
+    );
+
 
   const [
     availability,
@@ -1044,15 +1056,19 @@ export default function ProfileEditor({
           </span>
         </div>
 
-        <textarea
+        <MentionTextarea
           name="bio"
-          maxLength={300}
-          rows={5}
-          defaultValue={
-            initialProfile?.bio ??
-            ""
+          value={
+            bio
           }
-          placeholder="Tell people something about yourself..."
+          onChange={
+            setBio
+          }
+          maxLength={
+            300
+          }
+          rows={5}
+          placeholder="Tell people something about yourself... use @username to mention"
           className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-[15px] leading-7 text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
         />
       </div>

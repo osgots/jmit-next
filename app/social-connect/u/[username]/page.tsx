@@ -1,3 +1,4 @@
+import MentionText from "@/components/social/mention-text";
 import {
   BadgeCheck,
   Camera,
@@ -609,10 +610,11 @@ export default async function SocialProfilePage({
               <div className="mt-6 max-w-2xl">
                 {profile.bio && (
                   <p className="whitespace-pre-wrap text-[15px] leading-7 text-slate-700 dark:text-slate-300">
-                    {
-                      profile.bio
-                    }
-                  </p>
+                    <MentionText
+                      text={
+                        profile.bio
+                      }
+                    /></p>
                 )}
 
                 {blue && (

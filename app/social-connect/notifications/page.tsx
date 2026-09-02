@@ -270,6 +270,13 @@ export default async function NotificationsPage() {
     actor: any,
   ) {
     if (
+      item.story_id
+    ) {
+      return `/social-connect?story=${item.story_id}`;
+    }
+
+
+    if (
       [
         "like",
         "comment",
